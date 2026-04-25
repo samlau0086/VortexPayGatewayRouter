@@ -132,6 +132,8 @@ function vortexpay_init_gateway_class() {
                  $order->update_status( 'refunded', 'VortexPay: Payment refunded on target B site.' );
             } elseif ( $data['status'] === 'on-hold' ) {
                  $order->update_status( 'on-hold', 'VortexPay: Payment on-hold on target B site.' );
+            } elseif ( $data['status'] === 'pending' ) {
+                 $order->update_status( 'pending', 'VortexPay: Payment pending on target B site.' );
             }
             
             $order->update_meta_data('_vortexpay_incoming_sync', 'no');
@@ -142,7 +144,7 @@ function vortexpay_init_gateway_class() {
         }
 
         public function sync_origin_status_changed($order_id, $old_status, $new_status, $order) {
-             $syncable_statuses = array('refunded', 'cancelled', 'on-hold', 'completed', 'processing', 'failed');
+             $syncable_statuses = array('refunded', 'cancelled', 'on-hold', 'pending', 'completed', 'processing', 'failed');
              if (!in_array($new_status, $syncable_statuses)) return;
              
              $status = $new_status;
@@ -270,7 +272,8 @@ function vortexpay_b_status_changed($order_id, $old_status, $new_status, $order)
         'failed'     => 'failed',
         'cancelled'  => 'cancelled',
         'refunded'   => 'refunded',
-        'on-hold'    => 'on-hold'
+        'on-hold'    => 'on-hold',
+        'pending'    => 'pending'
     );
     
     if (array_key_exists($new_status, $status_map)) {
@@ -337,6 +340,8 @@ function vortexpay_b_webhook_handler() {
          $order->update_status( 'on-hold', 'VortexPay: Order on-hold on Origin A site.' );
     } elseif ( $data['status'] === 'paid' ) {
          $order->update_status( 'processing', 'VortexPay: Order paid on Origin A site.' );
+    } elseif ( $data['status'] === 'pending' ) {
+         $order->update_status( 'pending', 'VortexPay: Order pending on Origin A site.' );
     }
 
     // Reset flag after status update
