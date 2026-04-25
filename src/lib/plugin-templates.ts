@@ -30,9 +30,8 @@ function vortexpay_init_gateway_class() {
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             add_action( 'woocommerce_api_vortexpay_callback', array( $this, 'webhook_handler' ) );
             
-            // Listen for Origin changes (Refund/Cancel) to sync back to Router
-            add_action( 'woocommerce_order_status_refunded', array( $this, 'sync_origin_status_refunded' ), 10, 1 );
-            add_action( 'woocommerce_order_status_cancelled', array( $this, 'sync_origin_status_cancelled' ), 10, 1 );
+            // Listen for Origin changes to sync back to Router
+            add_action( 'woocommerce_order_status_changed', array( $this, 'sync_origin_status_changed' ), 10, 4 );
         }
 
         public function init_form_fields() {
@@ -131,6 +130,8 @@ function vortexpay_init_gateway_class() {
                 $order->update_status( 'cancelled', 'VortexPay: Payment failed/cancelled on target B site.' );
             } elseif ( $data['status'] === 'refunded' ) {
                  $order->update_status( 'refunded', 'VortexPay: Payment refunded on target B site.' );
+            } elseif ( $data['status'] === 'on-hold' ) {
+                 $order->update_status( 'on-hold', 'VortexPay: Payment on-hold on target B site.' );
             }
             
             $order->update_meta_data('_vortexpay_incoming_sync', 'no');
@@ -140,12 +141,15 @@ function vortexpay_init_gateway_class() {
             exit;
         }
 
-        public function sync_origin_status_refunded($order_id) {
-             $this->send_origin_webhook($order_id, 'refunded');
-        }
-
-        public function sync_origin_status_cancelled($order_id) {
-             $this->send_origin_webhook($order_id, 'cancelled');
+        public function sync_origin_status_changed($order_id, $old_status, $new_status, $order) {
+             $syncable_statuses = array('refunded', 'cancelled', 'on-hold', 'completed', 'processing', 'failed');
+             if (!in_array($new_status, $syncable_statuses)) return;
+             
+             $status = $new_status;
+             if ($new_status === 'processing' || $new_status === 'completed') {
+                  $status = 'paid';
+             }
+             $this->send_origin_webhook($order_id, $status);
         }
 
         private function send_origin_webhook($order_id, $status) {
@@ -255,27 +259,23 @@ function vortexpay_b_return_url( $return_url, $order ) {
     return $return_url;
 }
 
-// 3. Listen for completed/failed payments and ping Router
-add_action('woocommerce_payment_complete', 'vortexpay_b_payment_complete');
-add_action('woocommerce_order_status_processing', 'vortexpay_b_payment_complete');
-add_action('woocommerce_order_status_completed', 'vortexpay_b_payment_complete');
-function vortexpay_b_payment_complete($order_id) {
-    vortexpay_b_send_webhook($order_id, 'paid');
-}
-
-add_action('woocommerce_order_status_failed', 'vortexpay_b_payment_failed');
-function vortexpay_b_payment_failed($order_id) {
-    vortexpay_b_send_webhook($order_id, 'failed');
-}
-
-add_action('woocommerce_order_status_refunded', 'vortexpay_b_payment_refunded');
-function vortexpay_b_payment_refunded($order_id) {
-    vortexpay_b_send_webhook($order_id, 'refunded');
-}
-
-add_action('woocommerce_order_status_cancelled', 'vortexpay_b_payment_cancelled');
-function vortexpay_b_payment_cancelled($order_id) {
-    vortexpay_b_send_webhook($order_id, 'cancelled');
+// 3. Listen for order status changes and ping Router
+add_action('woocommerce_order_status_changed', 'vortexpay_b_status_changed', 10, 4);
+function vortexpay_b_status_changed($order_id, $old_status, $new_status, $order) {
+    if ($old_status === $new_status) return;
+    
+    $status_map = array(
+        'processing' => 'paid',
+        'completed'  => 'paid',
+        'failed'     => 'failed',
+        'cancelled'  => 'cancelled',
+        'refunded'   => 'refunded',
+        'on-hold'    => 'on-hold'
+    );
+    
+    if (array_key_exists($new_status, $status_map)) {
+        vortexpay_b_send_webhook($order_id, $status_map[$new_status]);
+    }
 }
 
 function vortexpay_b_send_webhook($order_id, $status) {
@@ -333,6 +333,10 @@ function vortexpay_b_webhook_handler() {
         $order->update_status( 'cancelled', 'VortexPay: Order cancelled on Origin A site.' );
     } elseif ( $data['status'] === 'refunded' ) {
          $order->update_status( 'refunded', 'VortexPay: Order refunded on Origin A site.' );
+    } elseif ( $data['status'] === 'on-hold' ) {
+         $order->update_status( 'on-hold', 'VortexPay: Order on-hold on Origin A site.' );
+    } elseif ( $data['status'] === 'paid' ) {
+         $order->update_status( 'processing', 'VortexPay: Order paid on Origin A site.' );
     }
 
     // Reset flag after status update
