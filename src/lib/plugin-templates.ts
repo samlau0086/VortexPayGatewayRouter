@@ -121,6 +121,9 @@ function vortexpay_init_gateway_class() {
                 wp_die( 'Order not found', 'Error', 404 );
             }
 
+            $order->update_meta_data('_vortexpay_incoming_sync', 'yes');
+            $order->save();
+
             if ( $data['status'] === 'paid' ) {
                 $order->payment_complete( $data['sysOrderId'] );
                 $order->add_order_note('VortexPay: Payment successful on target B site.');
@@ -129,6 +132,9 @@ function vortexpay_init_gateway_class() {
             } elseif ( $data['status'] === 'refunded' ) {
                  $order->update_status( 'refunded', 'VortexPay: Payment refunded on target B site.' );
             }
+            
+            $order->update_meta_data('_vortexpay_incoming_sync', 'no');
+            $order->save();
 
             echo wp_json_encode(array('success' => true));
             exit;
@@ -146,6 +152,8 @@ function vortexpay_init_gateway_class() {
              $order = wc_get_order($order_id);
              $sys_id = $order->get_meta('_vortexpay_sys_id');
              if(empty($sys_id)) return;
+             
+             if ($order->get_meta('_vortexpay_incoming_sync') === 'yes') return;
 
              $router_url = $this->get_option('router_url');
              if(empty($router_url)) return;
@@ -249,6 +257,8 @@ function vortexpay_b_return_url( $return_url, $order ) {
 
 // 3. Listen for completed/failed payments and ping Router
 add_action('woocommerce_payment_complete', 'vortexpay_b_payment_complete');
+add_action('woocommerce_order_status_processing', 'vortexpay_b_payment_complete');
+add_action('woocommerce_order_status_completed', 'vortexpay_b_payment_complete');
 function vortexpay_b_payment_complete($order_id) {
     vortexpay_b_send_webhook($order_id, 'paid');
 }
@@ -263,6 +273,11 @@ function vortexpay_b_payment_refunded($order_id) {
     vortexpay_b_send_webhook($order_id, 'refunded');
 }
 
+add_action('woocommerce_order_status_cancelled', 'vortexpay_b_payment_cancelled');
+function vortexpay_b_payment_cancelled($order_id) {
+    vortexpay_b_send_webhook($order_id, 'cancelled');
+}
+
 function vortexpay_b_send_webhook($order_id, $status) {
     $order = wc_get_order($order_id);
     if (!$order) return;
@@ -270,8 +285,14 @@ function vortexpay_b_send_webhook($order_id, $status) {
     $sys_id = $order->get_meta('_vortexpay_sys_id');
     if (empty($sys_id)) return;
 
+    // Skip sending webhook if this status was triggered by an incoming router sync
+    if ($order->get_meta('_vortexpay_incoming_sync') === 'yes') return;
+
     $router_url = get_option('vortexpay_router_url');
     if (empty($router_url)) return;
+
+    // Prevent duplicate webhook for the same status
+    if ($order->get_meta('_vortexpay_synced_' . $status) === 'yes') return;
 
     $payload = array(
         'sysOrderId' => $sys_id,
@@ -284,5 +305,41 @@ function vortexpay_b_send_webhook($order_id, $status) {
         'headers' => array( 'Content-Type' => 'application/json' ),
         'blocking' => false
     ));
+    
+    $order->update_meta_data('_vortexpay_synced_' . $status, 'yes');
+    $order->save();
+}
+
+// 4. Listen for Router -> B site sync updates (e.g. A site cancelled/refunded)
+add_action('woocommerce_api_vortexpay_b_callback', 'vortexpay_b_webhook_handler');
+function vortexpay_b_webhook_handler() {
+    $body = file_get_contents('php://input');
+    $data = json_decode($body, true);
+
+    if ( empty($data['sysOrderId']) || empty($data['order_id']) || empty($data['status']) ) {
+        wp_die( 'Invalid payload', 'Error', 400 );
+    }
+
+    $order = wc_get_order( $data['order_id'] );
+    if ( ! $order ) {
+        wp_die( 'Order not found', 'Error', 404 );
+    }
+
+    // Mark that we are applying an incoming sync so we don't bounce it back
+    $order->update_meta_data('_vortexpay_incoming_sync', 'yes');
+    $order->save();
+
+    if ( $data['status'] === 'cancelled' ) {
+        $order->update_status( 'cancelled', 'VortexPay: Order cancelled on Origin A site.' );
+    } elseif ( $data['status'] === 'refunded' ) {
+         $order->update_status( 'refunded', 'VortexPay: Order refunded on Origin A site.' );
+    }
+
+    // Reset flag after status update
+    $order->update_meta_data('_vortexpay_incoming_sync', 'no');
+    $order->save();
+
+    echo wp_json_encode(array('success' => true));
+    exit;
 }
 ?>`;

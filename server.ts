@@ -518,6 +518,7 @@ async function startServer() {
 
   // Mock Webhook from Payment Gateway hitting B Site
   app.post('/api/webhook/gateway', (req, res) => {
+    console.log('[WEBHOOK] Received from B Site:', req.body);
     try {
       const { sysOrderId, status } = req.body; 
       const order = db.prepare('SELECT * FROM orders WHERE sysOrderId = ?').get(sysOrderId) as any;
@@ -528,28 +529,39 @@ async function startServer() {
         const aSite = db.prepare('SELECT * FROM a_sites WHERE id = ?').get(order.aSiteId) as any;
         if (aSite) {
           const aSiteWebhookUrl = `https://${aSite.domain}/wc-api/vortexpay_callback`;
+          console.log('[WEBHOOK] Syncing to A Site:', aSiteWebhookUrl, { sysOrderId, order_id: order.aSiteOrderId, status });
+          
           fetch(aSiteWebhookUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'User-Agent': 'VortexPay-Router/1.0' },
             body: JSON.stringify({
               sysOrderId: sysOrderId,
               order_id: order.aSiteOrderId,
               status: status
             })
-          }).then(r => {
-             db.prepare("UPDATE orders SET syncToAStatus = 'synced' WHERE sysOrderId = ?").run(sysOrderId);
+          }).then(async r => {
+             const respText = await r.text();
+             console.log(`[WEBHOOK] A Site Response (${r.status}):`, respText);
+             if (r.ok) {
+               db.prepare("UPDATE orders SET syncToAStatus = 'synced' WHERE sysOrderId = ?").run(sysOrderId);
+             } else {
+               db.prepare("UPDATE orders SET syncToAStatus = 'failed' WHERE sysOrderId = ?").run(sysOrderId);
+             }
           }).catch(err => {
-             console.error('[GATEWAY] Error syncing to A Site:', err.message);
+             console.error('[WEBHOOK] Error syncing to A Site:', err.message);
              db.prepare("UPDATE orders SET syncToAStatus = 'failed' WHERE sysOrderId = ?").run(sysOrderId);
           });
+        } else {
+          console.error('[WEBHOOK] A Site not found for order:', sysOrderId);
         }
         
         res.json({ success: true, updated: true });
       } else {
-        res.json({ success: false, error: 'Order not found' });
+        console.error('[WEBHOOK] Order not found for sysOrderId:', sysOrderId);
+        res.status(404).json({ success: false, error: 'Order not found' });
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('[WEBHOOK] Critical Error:', err.message);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
@@ -567,9 +579,34 @@ async function startServer() {
 
         db.prepare("UPDATE orders SET status = ?, syncToBStatus = 'syncing' WHERE sysOrderId = ?").run(status, sysOrderId);
         
-        setTimeout(() => {
-           db.prepare("UPDATE orders SET syncToBStatus = 'synced' WHERE sysOrderId = ?").run(sysOrderId);
-        }, 1500);
+        const bSite = db.prepare('SELECT * FROM b_sites WHERE id = ?').get(order.bSiteId) as any;
+        if (bSite) {
+          const bSiteWebhookUrl = `https://${bSite.domain}/wc-api/vortexpay_b_callback`;
+          console.log('[WEBHOOK] Syncing to B Site:', bSiteWebhookUrl, { sysOrderId, order_id: order.bSiteOrderId, status });
+          
+          fetch(bSiteWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'User-Agent': 'VortexPay-Router/1.0' },
+            body: JSON.stringify({
+              sysOrderId: sysOrderId,
+              order_id: order.bSiteOrderId,
+              status: status
+            })
+          }).then(async r => {
+             const respText = await r.text();
+             console.log(`[WEBHOOK] B Site Response (${r.status}):`, respText);
+             if (r.ok) {
+               db.prepare("UPDATE orders SET syncToBStatus = 'synced' WHERE sysOrderId = ?").run(sysOrderId);
+             } else {
+               db.prepare("UPDATE orders SET syncToBStatus = 'failed' WHERE sysOrderId = ?").run(sysOrderId);
+             }
+          }).catch(err => {
+             console.error('[WEBHOOK] Error syncing to B Site:', err.message);
+             db.prepare("UPDATE orders SET syncToBStatus = 'failed' WHERE sysOrderId = ?").run(sysOrderId);
+          });
+        } else {
+           console.error('[WEBHOOK] B Site not found for order:', sysOrderId);
+        }
         
         res.json({ success: true, updated: true });
       } else {
