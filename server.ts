@@ -21,6 +21,36 @@ async function startServer() {
 
   app.use(express.json());
 
+  // --- Bootstrap Logic ---
+  async function bootstrapSystem() {
+    console.log("[SYSTEM] Checking for initial admin account...");
+    const existingAdmin = db.prepare('SELECT * FROM tenants WHERE email = ?').get('samlau0086@gmail.com') as any;
+    
+    if (!existingAdmin) {
+      const email = process.env.ADMIN_EMAIL || 'samlau0086@gmail.com';
+      const password = process.env.ADMIN_PASSWORD || 'admin123456';
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const tempUid = 'sys_admin_' + crypto.randomBytes(3).toString('hex');
+      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+      try {
+        db.prepare(`
+          INSERT INTO tenants (id, email, password, strategy, roundRobinIndex, apiKey, active, expiresAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(tempUid, email, hashedPassword, 'random', 0, 'sk_admin_' + crypto.randomBytes(4).toString('hex'), 1, expiresAt);
+        
+        console.log(`[SYSTEM] Bootstrap: Created default admin account: ${email}`);
+        console.log(`[SYSTEM] Initial password set. Use .env to customize or change in panel.`);
+      } catch (err) {
+        console.error(`[SYSTEM] Bootstrap Error:`, err);
+      }
+    } else {
+      console.log(`[SYSTEM] Admin account verified.`);
+    }
+  }
+  
+  await bootstrapSystem();
+
   // --- Email Helper ---
   async function getEmailConfig() {
     const settings = db.prepare('SELECT * FROM system_settings').all() as any[];
