@@ -480,14 +480,22 @@ function vortexpay_b_webhook_handler() {
     $body = file_get_contents('php://input');
     $data = json_decode($body, true);
 
-    if ( empty($data['sysOrderId']) || empty($data['order_id']) || empty($data['status']) ) {
+    if ( empty($data['sysOrderId']) || empty($data['status']) ) {
         wp_die( 'Invalid payload', 'Error', 400 );
     }
 
-    $order = wc_get_order( $data['order_id'] );
-    if ( ! $order ) {
-        wp_die( 'Order not found', 'Error', 404 );
+    $orders = wc_get_orders(array(
+        'meta_key' => '_vortexpay_sys_id',
+        'meta_value' => sanitize_text_field($data['sysOrderId']),
+        'limit' => 1,
+        'return' => 'objects'
+    ));
+
+    if ( empty($orders) ) {
+        wp_die( 'Order not found for sysOrderId: ' . esc_html($data['sysOrderId']), 'Error', 404 );
     }
+    
+    $order = $orders[0];
 
     // Mark that we are applying an incoming sync so we don't bounce it back
     $order->update_meta_data('_vortexpay_incoming_sync', 'yes');
@@ -503,6 +511,8 @@ function vortexpay_b_webhook_handler() {
          $order->update_status( 'processing', 'VortexPay: Order paid on Origin A site.' );
     } elseif ( $data['status'] === 'pending' ) {
          $order->update_status( 'pending', 'VortexPay: Order pending on Origin A site.' );
+    } elseif ( $data['status'] === 'failed' ) {
+         $order->update_status( 'failed', 'VortexPay: Order failed on Origin A site.' );
     }
 
     // Reset flag after status update
