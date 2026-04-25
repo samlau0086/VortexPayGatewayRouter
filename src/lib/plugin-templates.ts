@@ -250,6 +250,167 @@ function vortexpay_b_intercept() {
     }
 }
 
+// 2.5 Inject Custom Professional UI for VortexPay Checkouts
+add_action('wp_head', 'vortexpay_b_custom_checkout_ui', 999);
+function vortexpay_b_custom_checkout_ui() {
+    if ( function_exists('is_checkout_pay_page') && is_checkout_pay_page() ) {
+        global $wp;
+        $order_id = absint( $wp->query_vars['order-pay'] );
+        $order = wc_get_order( $order_id );
+        if ( $order && $order->get_meta('_vortexpay_sys_id') ) {
+            ?>
+            <style>
+                /* Professional Checkout Overrides */
+                html, body {
+                    background-color: #f7f9fc !important;
+                    height: 100%;
+                    margin: 0;
+                }
+                header, footer, .sidebar, #sidebar, .site-header, .site-footer, .header, .footer, #header, #footer {
+                    display: none !important;
+                }
+                .site, #page, #wrapper, .wrap, .container {
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    max-width: 100% !important;
+                }
+                .woocommerce {
+                    max-width: 450px !important;
+                    margin: 8vh auto 40px auto !important;
+                    background: #ffffff !important;
+                    padding: 40px !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.08) !important;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
+                }
+                .woocommerce::before {
+                    content: "Secure Checkout";
+                    display: block;
+                    text-align: center;
+                    font-size: 22px;
+                    font-weight: 700;
+                    margin-bottom: 30px;
+                    color: #111;
+                }
+                .woocommerce-NoticeGroup, .woocommerce-error, .woocommerce-message, .woocommerce-info {
+                    margin-bottom: 24px !important;
+                    border-radius: 8px !important;
+                }
+                ul.order_details {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    margin: 0 0 30px 0 !important;
+                    padding: 0 !important;
+                    border: none !important;
+                }
+                ul.order_details li {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 14px;
+                    border: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    text-transform: none !important;
+                    color: #666;
+                }
+                ul.order_details li strong {
+                    color: #111;
+                    font-size: 16px;
+                }
+                #order_review_heading {
+                    display: none !important;
+                }
+                table.shop_table {
+                    border: none !important;
+                    margin-bottom: 24px !important;
+                }
+                table.shop_table thead, table.shop_table tbody {
+                    display: none !important;
+                }
+                table.shop_table tfoot th, table.shop_table tfoot td {
+                    border-top: 1px solid #f0f0f0 !important;
+                    border-bottom: none !important;
+                    padding: 16px 0 !important;
+                    background: transparent !important;
+                    font-weight: 400 !important;
+                }
+                table.shop_table tfoot tr.order-total th, table.shop_table tfoot tr.order-total td {
+                    font-size: 20px !important;
+                    color: #111 !important;
+                    font-weight: 700 !important;
+                    border-top: 2px solid #eaeaea !important;
+                }
+                table.shop_table tfoot tr.order-total td strong {
+                    font-weight: 700 !important;
+                }
+                #payment {
+                    background: transparent !important;
+                    border-radius: 0 !important;
+                    padding: 0 !important;
+                }
+                #payment ul.payment_methods {
+                    border-bottom: none !important;
+                    padding: 0 0 24px 0 !important;
+                }
+                #payment ul.payment_methods li {
+                    background: #fff;
+                    border: 1px solid #eaeaea;
+                    border-radius: 8px;
+                    margin-bottom: 10px;
+                    padding: 16px;
+                    transition: border-color 0.2s ease;
+                }
+                #payment ul.payment_methods li:hover {
+                    border-color: #ccc;
+                }
+                #payment div.payment_box {
+                    background-color: #f7f9fc !important;
+                    color: #555 !important;
+                    box-shadow: none !important;
+                    border-radius: 6px !important;
+                    margin-top: 12px !important;
+                    padding: 16px !important;
+                    font-size: 13.5px !important;
+                    line-height: 1.5 !important;
+                }
+                #payment div.payment_box::before {
+                    display: none !important;
+                }
+                .place-order {
+                    padding: 0 !important;
+                    background: transparent !important;
+                    border: none !important;
+                    margin-top: 20px !important;
+                }
+                #place_order {
+                    width: 100% !important;
+                    padding: 18px !important;
+                    background-color: #111 !important;
+                    color: #fff !important;
+                    font-size: 16px !important;
+                    font-weight: 600 !important;
+                    border-radius: 8px !important;
+                    border: none !important;
+                    transition: all 0.2s ease !important;
+                    cursor: pointer !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+                }
+                #place_order:hover {
+                    background-color: #333 !important;
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
+                }
+            </style>
+            <?php
+        }
+    }
+}
+
 add_filter( 'woocommerce_get_return_url', 'vortexpay_b_return_url', 10, 2 );
 function vortexpay_b_return_url( $return_url, $order ) {
     if ( $order ) {
