@@ -325,7 +325,7 @@ function vortexpay_b_custom_checkout_ui() {
                     margin-bottom: 24px !important;
                     width: 100% !important;
                 }
-                table.shop_table thead, table.shop_table tbody, table.shop_table tfoot tr:not(.order-total) {
+                table.shop_table thead, table.shop_table tbody, table.shop_table tfoot tr:not(:last-child) {
                     display: none !important;
                 }
                 table.shop_table tfoot th, table.shop_table tfoot td {
@@ -343,12 +343,12 @@ function vortexpay_b_custom_checkout_ui() {
                 table.shop_table tfoot td {
                     text-align: right !important;
                 }
-                table.shop_table tfoot tr.order-total th, table.shop_table tfoot tr.order-total td {
+                table.shop_table tfoot tr:last-child th, table.shop_table tfoot tr:last-child td {
                     font-size: 20px !important;
                     color: #111 !important;
                     border-top: 1px solid #eaeaea !important;
                 }
-                table.shop_table tfoot tr.order-total td strong {
+                table.shop_table tfoot tr:last-child td strong {
                     font-weight: 700 !important;
                 }
                 #payment {
