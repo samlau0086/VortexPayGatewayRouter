@@ -268,6 +268,9 @@ function vortexpay_b_custom_checkout_ui() {
                 header, footer, .sidebar, #sidebar, .site-header, .site-footer, .header, .footer, #header, #footer {
                     display: none !important;
                 }
+                .page-title, .entry-title, .entry-header, h1.post-title, .site-title, .site-branding {
+                    display: none !important;
+                }
                 .site, #page, #wrapper, .wrap, .container {
                     background: transparent !important;
                     box-shadow: none !important;
@@ -314,31 +317,8 @@ function vortexpay_b_custom_checkout_ui() {
                     color: #111;
                     font-size: 16px;
                 }
-                #order_review_heading {
+                #order_review_heading, table.shop_table {
                     display: none !important;
-                }
-                table.shop_table {
-                    border: none !important;
-                    margin-bottom: 24px !important;
-                }
-                table.shop_table thead, table.shop_table tbody, table.shop_table tfoot tr.cart-subtotal {
-                    display: none !important;
-                }
-                table.shop_table tfoot th, table.shop_table tfoot td {
-                    border-top: 1px solid #f0f0f0 !important;
-                    border-bottom: none !important;
-                    padding: 16px 0 !important;
-                    background: transparent !important;
-                    font-weight: 400 !important;
-                }
-                table.shop_table tfoot tr.order-total th, table.shop_table tfoot tr.order-total td {
-                    font-size: 20px !important;
-                    color: #111 !important;
-                    font-weight: 700 !important;
-                    border-top: 2px solid #eaeaea !important;
-                }
-                table.shop_table tfoot tr.order-total td strong {
-                    font-weight: 700 !important;
                 }
                 #payment {
                     background: transparent !important;
