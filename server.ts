@@ -843,12 +843,11 @@ async function startServer() {
          `);
       }
 
-      // Output an HTML page that strips the referer natively via meta tag, performs fraud checks, then redirects
       res.send(`
         <!DOCTYPE html>
         <html>
         <head>
-          <title>System Authentication</title>
+          <title>Secure Checkout Processing</title>
           <meta charset="utf-8">
           <meta name="referrer" content="no-referrer">
           <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -859,197 +858,190 @@ async function startServer() {
                 justify-content: center; 
                 align-items: center; 
                 height: 100vh; 
-                background: #f4f5f7; 
+                background: #f8fafc; 
                 color: #111827; 
                 margin: 0;
               }
               .container {
                 background: white;
                 box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-                max-width: 420px;
+                max-width: 400px;
                 width: 90%;
-                padding: 40px 32px;
-                border-radius: 16px;
+                padding: 48px 32px;
+                border-radius: 20px;
                 text-align: center;
               }
-              .icon-wrapper {
-                color: #10b981;
-                margin-bottom: 20px;
+              .shield-container {
+                position: relative;
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 32px;
                 display: flex;
+                align-items: center;
                 justify-content: center;
+                background: #f0fdf4;
+                border-radius: 50%;
               }
-              .icon-lock {
-                width: 36px;
-                height: 36px;
+              .shield-icon {
+                color: #10b981;
+                width: 40px;
+                height: 40px;
+                z-index: 2;
+                transition: transform 0.5s ease;
+              }
+              .spinner-ring {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: 3px solid #d1fae5;
+                border-top-color: #10b981;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                box-sizing: border-box;
+              }
+              @keyframes spin {
+                to { transform: rotate(360deg); }
               }
               h1 {
-                font-size: 20px;
+                font-size: 22px;
                 font-weight: 700;
                 margin: 0 0 12px;
                 color: #111827;
               }
-              p.subtitle {
-                font-size: 13px;
-                font-weight: 400;
-                color: #6b7280;
-                margin: 0 0 32px;
-              }
-              .divider {
-                height: 1px;
-                background: #f3f4f6;
-                margin: 0 -32px 32px;
-              }
-              .order-total-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                font-size: 16px;
-                margin-top: -8px;
-                margin-bottom: 24px;
-                color: #111827;
-              }
-              .total-label {
-                font-weight: 500;
-              }
-              .total-value {
+              .amount {
+                font-size: 24px;
                 font-weight: 600;
-                font-size: 18px;
+                color: #111827;
+                margin-bottom: 32px;
               }
-              .terminal-wrapper {
-                background: #f9fafb;
-                border: 1px solid #e5e7eb;
-                border-radius: 8px;
-                color: #4b5563;
-                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-                padding: 16px;
-                height: 130px;
-                overflow-y: hidden;
+              .status-container {
                 position: relative;
-                text-align: left;
+                height: 24px;
+                overflow: hidden;
+                margin-bottom: 8px;
               }
-              .terminal {
-                display: block;
+              .status-text {
+                font-size: 15px;
+                color: #6b7280;
+                font-weight: 500;
+                position: absolute;
+                width: 100%;
+                text-align: center;
+                transition: opacity 0.3s ease, transform 0.3s ease;
               }
-              .line {
-                margin: 6px 0;
+              .status-text.entering {
+                opacity: 0;
+                transform: translateY(10px);
+              }
+              .status-text.active {
+                opacity: 1;
+                transform: translateY(0);
+              }
+              .status-text.exiting {
+                opacity: 0;
+                transform: translateY(-10px);
+              }
+              .encryption-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #f3f4f6;
+                padding: 6px 12px;
+                border-radius: 100px;
                 font-size: 12px;
-                line-height: 1.4;
-                word-wrap: break-word;
+                font-weight: 600;
+                color: #4b5563;
+                margin-top: 32px;
               }
-              .line.success {
-                color: #059669;
-                font-weight: 700;
-              }
-              .line.warning {
-                color: #dc2626;
-                font-weight: 700;
-              }
-              .header {
-                color: #141414;
-                margin-bottom: 12px;
-                font-size: 10px;
-                text-transform: uppercase;
-                letter-spacing: 0.1em;
-                line-height: 1.3;
-                font-weight: 800;
-              }
-              .blink {
-                animation: blinker 1s linear infinite;
-                background: #141414;
-                color: #141414;
-                display: inline-block;
-                width: 6px;
+              .encryption-badge svg {
+                width: 12px;
                 height: 12px;
-                vertical-align: middle;
-                margin-left: 4px;
-              }
-              @keyframes blinker {
-                50% { opacity: 0; }
-              }
-              .icon-spinner {
-                animation: spin 1s linear infinite;
-                width: 20px;
-                height: 20px;
-              }
-              @keyframes spin {
-                100% { transform: rotate(360deg); }
+                color: #6b7280;
               }
           </style>
         </head>
         <body>
           <div class="container">
-            <div class="icon-wrapper">
-              <svg class="icon-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            <div class="shield-container">
+              <div class="spinner-ring" id="spinner"></div>
+              <svg class="shield-icon" id="shield" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path id="check-path" d="M9 12l2 2 4-4" stroke-dasharray="20" stroke-dashoffset="20" style="transition: stroke-dashoffset 0.5s ease 0.5s;"></path>
               </svg>
             </div>
             <h1>Secure Checkout</h1>
-            <p class="subtitle">Complete your payment securely below.</p>
+            <div class="amount">${formattedTotal}</div>
             
-            <div class="divider"></div>
-
-            <div class="order-total-row">
-              <span class="total-label">Total:</span>
-              <span class="total-value">${formattedTotal}</span>
+            <div class="status-container" id="status-container">
+              <div class="status-text active">Securing your connection...</div>
             </div>
             
-            <div class="terminal-wrapper">
-              <div class="terminal" id="output"></div>
-              <div class="line" id="cursor"><span class="blink"></span></div>
+            <div class="encryption-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              256-bit TLS Encryption
             </div>
           </div>
           <script>
             const steps = [
-              { text: "> Initializing payment gateway...", delay: 200 },
-              { text: "> Connecting to secure Site B node...", delay: 300 },
-              { text: "> Handshake established (TLS 1.3).", delay: 500 },
-              { text: "> Verifying merchant credentials...", delay: 400 },
-              { text: "> Running preliminary risk assessment...", delay: 600 },
-              { text: "> Risk score: ACCEPTABLE", delay: 200, className: "success" },
-              { text: "> Applying tenant routing rules...", delay: 500 },
-              { text: "> Session validated. Redirecting...", delay: 400, className: "success" }
+              { text: "Securing your connection...", delay: 600 },
+              { text: "Verifying merchant details...", delay: 800 },
+              { text: "Analyzing risk profile...", delay: 900 },
+              { text: "Processing secure token...", delay: 700 },
+              { text: "Redirecting to checkout...", delay: 600, final: true }
             ];
             
             let currentStep = 0;
-            const outputEl = document.getElementById('output');
-            const wrapperEl = document.querySelector('.terminal-wrapper');
+            const statusContainer = document.getElementById('status-container');
+            const spinner = document.getElementById('spinner');
+            const checkPath = document.getElementById('check-path');
+            const shield = document.getElementById('shield');
             
-            const isBot = navigator.webdriver || window.callPhantom || window.__nightmare;
-            
-            function appendLine(text, className) {
-              const el = document.createElement('div');
-              el.className = className ? 'line ' + className : 'line';
-              el.innerText = text;
-              outputEl.appendChild(el);
-              // scroll to bottom of the wrapper
-              wrapperEl.scrollTop = wrapperEl.scrollHeight;
+            function updateStatus(text, isFinal) {
+              const currentActive = statusContainer.querySelector('.active');
+              if (currentActive) {
+                currentActive.classList.replace('active', 'exiting');
+                setTimeout(() => currentActive.remove(), 300);
+              }
+              
+              const nextStatus = document.createElement('div');
+              nextStatus.className = 'status-text entering';
+              nextStatus.innerText = text;
+              statusContainer.appendChild(nextStatus);
+              
+              // Trigger reflow
+              void nextStatus.offsetWidth;
+              nextStatus.classList.replace('entering', 'active');
+              
+              if (isFinal) {
+                spinner.style.borderTopColor = '#d1fae5';
+                spinner.style.animation = 'none';
+                spinner.style.opacity = '0';
+                shield.style.transform = 'scale(1.1)';
+                checkPath.style.strokeDashoffset = '0';
+              }
             }
 
             function runNextStep() {
-              if (currentStep < steps.length) {
-                const step = steps[currentStep];
-                appendLine(step.text, step.className);
+              if (currentStep < steps.length - 1) {
                 currentStep++;
+                const step = steps[currentStep];
+                updateStatus(step.text, step.final);
                 
-                let nextDelay = step.delay;
-                // Add jitter
-                nextDelay += Math.floor(Math.random() * 200) - 100;
-                
-                if (isBot && currentStep === 5) {
-                    appendLine("> WARNING: Automated test-suite detected (WebDriver).", "warning");
-                    appendLine("> Deep forensic scan required...", "warning");
-                    nextDelay += 2000;
-                }
-                
+                let nextDelay = step.delay + (Math.floor(Math.random() * 200) - 100);
                 setTimeout(runNextStep, nextDelay);
               } else {
-                document.getElementById('cursor').style.display = 'none';
-                window.location.replace("${order.paymentUrl}");
+                setTimeout(() => {
+                  window.location.replace("${order.paymentUrl}");
+                }, 800);
               }
             }
             
-            setTimeout(runNextStep, 400);
+            setTimeout(runNextStep, steps[0].delay);
           </script>
         </body>
         </html>
