@@ -541,17 +541,78 @@ async function startServer() {
               <title>Returning to store...</title>
               <meta charset="utf-8">
               <meta name="referrer" content="no-referrer">
-              <meta http-equiv="refresh" content="0;url=${finalUrl.toString()}">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta http-equiv="refresh" content="3;url=${finalUrl.toString()}">
               <style>
-                  body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fafafa; color: #555; }
+                  body { 
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    height: 100vh; 
+                    background: #f8fafc; 
+                    color: #334155; 
+                    margin: 0;
+                  }
+                  .container {
+                    text-align: center;
+                    background: white;
+                    padding: 40px;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+                    max-width: 400px;
+                    width: 90%;
+                  }
+                  .check-icon {
+                    color: #10b981;
+                    width: 56px;
+                    height: 56px;
+                    margin: 0 auto 20px;
+                    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                    opacity: 0;
+                    transform: scale(0.5);
+                  }
+                  h1 {
+                    font-size: 20px;
+                    font-weight: 600;
+                    margin: 0 0 12px;
+                    color: #0f172a;
+                  }
+                  p {
+                    font-size: 15px;
+                    color: #64748b;
+                    margin: 0 0 24px;
+                    line-height: 1.5;
+                  }
+                  @keyframes popIn {
+                    to { transform: scale(1); opacity: 1; }
+                  }
+                  .spinner {
+                    width: 32px;
+                    height: 32px;
+                    border: 3px solid #f3f4f6;
+                    border-top: 3px solid #10b981;
+                    border-radius: 50%;
+                    margin: 0 auto;
+                    animation: spin 1s linear infinite;
+                  }
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
               </style>
             </head>
             <body>
-              <p>Payment securely completed. Returning to store...</p>
+              <div class="container">
+                <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h1>Transaction Complete</h1>
+                <p>Securely returning you to the merchant...</p>
+                <div class="spinner"></div>
+              </div>
               <script>
                 setTimeout(function() {
                     window.location.replace("${finalUrl.toString()}");
-                }, 100);
+                }, 1800);
               </script>
             </body>
             </html>
@@ -586,17 +647,78 @@ async function startServer() {
           <title>Redirecting to Payment...</title>
           <meta charset="utf-8">
           <meta name="referrer" content="no-referrer">
-          <meta http-equiv="refresh" content="0;url=${order.paymentUrl}">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <meta http-equiv="refresh" content="3;url=${order.paymentUrl}">
           <style>
-              body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fafafa; color: #555; }
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                height: 100vh; 
+                background: #f8fafc; 
+                color: #334155; 
+                margin: 0;
+              }
+              .container {
+                text-align: center;
+                background: white;
+                padding: 40px;
+                border-radius: 16px;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+                max-width: 400px;
+                width: 90%;
+              }
+              .lock-icon {
+                color: #10b981;
+                width: 48px;
+                height: 48px;
+                margin: 0 auto 20px;
+                animation: pulse 2s infinite;
+              }
+              h1 {
+                font-size: 20px;
+                font-weight: 600;
+                margin: 0 0 12px;
+                color: #0f172a;
+              }
+              p {
+                font-size: 15px;
+                color: #64748b;
+                margin: 0 0 24px;
+                line-height: 1.5;
+              }
+              .spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid #f3f4f6;
+                border-top: 3px solid #3b82f6;
+                border-radius: 50%;
+                margin: 0 auto;
+                animation: spin 1s linear infinite;
+              }
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              @keyframes pulse {
+                0% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.8; }
+                100% { transform: scale(1); opacity: 1; }
+              }
           </style>
         </head>
         <body>
-          <p>Redirecting to secure gateway...</p>
+          <div class="container">
+            <svg class="lock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <h1>Securing your transaction</h1>
+            <p>Please wait while we transfer you to our secure payment gateway...</p>
+            <div class="spinner"></div>
+          </div>
           <script>
             setTimeout(function() {
                 window.location.replace("${order.paymentUrl}");
-            }, 100);
+            }, 1800);
           </script>
         </body>
         </html>
