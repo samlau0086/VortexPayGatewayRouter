@@ -591,27 +591,33 @@ async function startServer() {
                     max-width: 420px;
                     width: 90%;
                   }
-                  .icon-wrapper {
-                    color: #6b7280;
-                    margin-bottom: 20px;
+                  .icon-box {
+                    width: 64px;
+                    height: 64px;
+                    background-color: #f3f4f6;
+                    border-radius: 50%;
                     display: flex;
+                    align-items: center;
                     justify-content: center;
+                    margin: 0 auto 24px;
+                    color: #4b5563;
                   }
                   .icon-cancel {
-                    width: 48px;
-                    height: 48px;
+                    width: 32px;
+                    height: 32px;
                   }
                   h1 {
-                    font-size: 20px;
+                    font-size: 24px;
                     font-weight: 700;
-                    margin: 0 0 12px;
+                    margin: 0 0 8px;
                     color: #111827;
                   }
                   p {
-                    font-size: 14px;
+                    font-size: 15px;
                     font-weight: 400;
                     color: #6b7280;
                     margin: 0 0 32px;
+                    line-height: 1.5;
                   }
                   .spinner {
                     width: 24px;
@@ -627,14 +633,15 @@ async function startServer() {
             </head>
             <body>
               <div class="container">
-                <div class="icon-wrapper">
+                <div class="icon-box">
                   <svg class="icon-cancel" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                    <path d="M3 6h18" />
+                    <path d="M16 10a4 4 0 0 1-8 0" />
                   </svg>
                 </div>
                 <h1>Payment Cancelled</h1>
-                <p>Returning you to the shopping cart...</p>
+                <p>Safely returning you to your shopping cart to review your order...</p>
                 <svg class="spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                 </svg>
