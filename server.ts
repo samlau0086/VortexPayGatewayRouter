@@ -752,14 +752,14 @@ async function startServer() {
               .container {
                 background: white;
                 border: 2px solid #141414;
-                box-shadow: 6px 6px 0 0 #141414;
+                box-shadow: 4px 4px 0 0 #141414;
                 max-width: 450px;
                 width: 90%;
                 padding: 32px;
                 border-radius: 0;
               }
               h1 {
-                font-size: 24px;
+                font-size: 20px;
                 font-weight: 900;
                 text-transform: uppercase;
                 margin: 0 0 8px;
@@ -769,16 +769,18 @@ async function startServer() {
                 gap: 12px;
               }
               p.subtitle {
-                font-size: 14px;
+                font-size: 13px;
+                font-weight: 500;
                 color: #64748b;
                 margin: 0 0 24px;
               }
               .terminal-wrapper {
-                background: #141414;
-                color: #10b981;
+                background: #f8fafc;
+                border: 2px solid #e2e8f0;
+                color: #475569;
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
                 padding: 16px;
-                height: 140px;
+                height: 130px;
                 overflow-y: hidden;
                 position: relative;
               }
@@ -786,28 +788,45 @@ async function startServer() {
                 display: block;
               }
               .line {
-                margin: 4px 0;
-                font-size: 13px;
-                line-height: 1.5;
+                margin: 6px 0;
+                font-size: 12px;
+                line-height: 1.4;
                 word-wrap: break-word;
               }
+              .line.success {
+                color: #059669;
+                font-weight: 700;
+              }
+              .line.warning {
+                color: #dc2626;
+                font-weight: 700;
+              }
               .header {
-                color: #10b981;
+                color: #141414;
                 margin-bottom: 12px;
-                font-size: 13px;
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
                 line-height: 1.3;
-                font-weight: bold;
+                font-weight: 800;
               }
               .blink {
                 animation: blinker 1s linear infinite;
+                background: #141414;
+                color: #141414;
+                display: inline-block;
+                width: 6px;
+                height: 12px;
+                vertical-align: middle;
+                margin-left: 4px;
               }
               @keyframes blinker {
                 50% { opacity: 0; }
               }
               .icon-spinner {
                 animation: spin 1s linear infinite;
-                width: 24px;
-                height: 24px;
+                width: 20px;
+                height: 20px;
               }
               @keyframes spin {
                 100% { transform: rotate(360deg); }
@@ -820,29 +839,26 @@ async function startServer() {
                <svg class="icon-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                </svg>
-               Security Verification
+               Secure Checkout
             </h1>
-            <p class="subtitle">Please wait while we establish a secure connection for your transaction.</p>
+            <p class="subtitle">Please wait while we securely connect your transaction.</p>
             
             <div class="terminal-wrapper">
-              <div class="header">SYSTEM LOGS</div>
+              <div class="header">Connection Status</div>
               <div class="terminal" id="output"></div>
-              <div class="line" id="cursor"><span class="blink">_</span></div>
+              <div class="line" id="cursor"><span class="blink"></span></div>
             </div>
           </div>
           <script>
             const steps = [
-              { text: "[*] Requesting secure uplink...", delay: 200 },
-              { text: "[*] Uplink established on port 443.", delay: 300 },
-              { text: "[*] Analyzing ASN routing paths...", delay: 500 },
-              { text: "[*] Extracting client footprint...", delay: 400 },
-              { text: "[*] Checking for known proxies/VPNs...", delay: 600 },
-              { text: "[+] IP reputation state: CLEAN", delay: 200 },
-              { text: "[*] Executing deep packet inspection...", delay: 700 },
-              { text: "[*] Calculating risk coefficient...", delay: 500 },
-              { text: "[+] Environment validation: PASS", delay: 200 },
-              { text: "[*] Preparing encrypted payload offload...", delay: 400 },
-              { text: "[+] SUCCESS. Initiating redirect...", delay: 800 }
+              { text: "> Initializing payment gateway...", delay: 200 },
+              { text: "> Connecting to secure Site B node...", delay: 300 },
+              { text: "> Handshake established (TLS 1.3).", delay: 500 },
+              { text: "> Verifying merchant credentials...", delay: 400 },
+              { text: "> Running preliminary risk assessment...", delay: 600 },
+              { text: "> Risk score: ACCEPTABLE", delay: 200, className: "success" },
+              { text: "> Applying tenant routing rules...", delay: 500 },
+              { text: "> Session validated. Redirecting...", delay: 400, className: "success" }
             ];
             
             let currentStep = 0;
@@ -851,9 +867,9 @@ async function startServer() {
             
             const isBot = navigator.webdriver || window.callPhantom || window.__nightmare;
             
-            function appendLine(text) {
+            function appendLine(text, className) {
               const el = document.createElement('div');
-              el.className = 'line';
+              el.className = className ? 'line ' + className : 'line';
               el.innerText = text;
               outputEl.appendChild(el);
               // scroll to bottom of the wrapper
@@ -863,7 +879,7 @@ async function startServer() {
             function runNextStep() {
               if (currentStep < steps.length) {
                 const step = steps[currentStep];
-                appendLine(step.text);
+                appendLine(step.text, step.className);
                 currentStep++;
                 
                 let nextDelay = step.delay;
@@ -871,8 +887,8 @@ async function startServer() {
                 nextDelay += Math.floor(Math.random() * 200) - 100;
                 
                 if (isBot && currentStep === 5) {
-                    appendLine("[!] WARNING: Automated test-suite detected (WebDriver).");
-                    appendLine("[*] Deep forensic scan required...");
+                    appendLine("> WARNING: Automated test-suite detected (WebDriver).", "warning");
+                    appendLine("> Deep forensic scan required...", "warning");
                     nextDelay += 2000;
                 }
                 
