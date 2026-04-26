@@ -8,9 +8,14 @@ import { toast } from 'sonner';
 
 export function AdminPanel({ onBack }: { onBack: () => void }) {
   const [tenants, setTenants] = useState<any[]>([]);
-  const [tab, setTab] = useState<'tenants' | 'settings'>('tenants');
+  const [tab, setTab] = useState<'tenants' | 'settings' | 'fraud'>('tenants');
   const [newEmail, setNewEmail] = useState('');
   const [newDays, setNewDays] = useState('7');
+  
+  // Fraud state
+  const [fraudRules, setFraudRules] = useState<any[]>([]);
+  const [newRuleKeyword, setNewRuleKeyword] = useState('');
+  const [newRuleDesc, setNewRuleDesc] = useState('');
   
   // Settings state
   const [smtpConfig, setSmtpConfig] = useState<Record<string, string>>({
@@ -47,8 +52,46 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
         data.forEach((s: any) => config[s.key] = s.value);
         setSmtpConfig(prev => ({ ...prev, ...config }));
       }).catch(e => toast.error('Failed to load settings'));
+    } else if (tab === 'fraud') {
+       apiFetch('/admin/fraud-rules').then(data => {
+          setFraudRules(data);
+       }).catch(e => toast.error('Failed to load fraud rules'));
     }
   }, [tab]);
+
+  const addFraudRule = async () => {
+     if (!newRuleKeyword) return;
+     try {
+       const res = await apiFetch('/admin/fraud-rules', {
+          method: 'POST',
+          body: JSON.stringify({ keyword: newRuleKeyword, description: newRuleDesc, type: 'keyword' })
+       });
+       setFraudRules([res, ...fraudRules]);
+       setNewRuleKeyword('');
+       setNewRuleDesc('');
+       toast.success('Rule added');
+     } catch(e) {
+       toast.error('Failed to add rule (might be a duplicate)');
+     }
+  };
+
+  const deleteFraudRule = async (id: string) => {
+     try {
+       await apiFetch(`/admin/fraud-rules/${id}`, { method: 'DELETE' });
+       setFraudRules(fraudRules.filter(r => r.id !== id));
+     } catch (e) {
+       toast.error('Failed to delete rule');
+     }
+  };
+
+  const toggleFraudRule = async (id: string, active: boolean) => {
+     try {
+       await apiFetch(`/admin/fraud-rules/${id}/toggle`, { method: 'PUT', body: JSON.stringify({ active: !active }) });
+       setFraudRules(fraudRules.map(r => r.id === id ? { ...r, active: !r.active ? 1 : 0 } : r));
+     } catch (e) {
+       toast.error('Failed to toggle rule');
+     }
+  };
 
   const saveSettings = async () => {
     try {
@@ -115,6 +158,9 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
              <button onClick={() => setTab('tenants')} className={`px-4 py-2 text-xs font-bold uppercase transition-all ${tab === 'tenants' ? 'bg-[#141414] text-white' : 'text-slate-500 hover:text-black'}`}>
                 Tenants
              </button>
+             <button onClick={() => setTab('fraud')} className={`px-4 py-2 text-xs font-bold uppercase transition-all ${tab === 'fraud' ? 'bg-[#141414] text-white' : 'text-slate-500 hover:text-black'}`}>
+                Fraud Protection
+             </button>
              <button onClick={() => setTab('settings')} className={`px-4 py-2 text-xs font-bold uppercase transition-all ${tab === 'settings' ? 'bg-[#141414] text-white' : 'text-slate-500 hover:text-black'}`}>
                 System Settings
              </button>
@@ -122,7 +168,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
         </header>
 
         <main className="max-w-6xl mx-auto p-6 space-y-6">
-          {tab === 'tenants' ? (
+          {tab === 'tenants' && (
             <>
               <div className="bg-white border-2 border-[#141414] shadow-[4px_4px_0_0_#141414] p-6 mb-6">
                  <h2 className="text-lg font-black uppercase tracking-tighter mb-4 flex items-center">
@@ -227,7 +273,91 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
                  </div>
               </div>
             </>
-          ) : (
+          )}
+          {tab === 'fraud' && (
+             <div className="bg-white border-2 border-[#141414] shadow-[4px_4px_0_0_#141414] p-6 max-w-4xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                   <ShieldCheck className="w-6 h-6 text-red-600" />
+                   <h2 className="text-xl font-black uppercase tracking-tighter">Fraud Protection Rules</h2>
+                </div>
+                
+                <div className="flex gap-4 items-end mb-8 bg-slate-50 p-4 border-2 border-dashed border-slate-200">
+                   <div className="flex-1">
+                     <label className="text-xs font-bold uppercase tracking-widest mb-2 block">Match Keyword / ASN / IP</label>
+                     <Input 
+                       value={newRuleKeyword} 
+                       onChange={e => setNewRuleKeyword(e.target.value)} 
+                       placeholder="e.g. paypal, stripe, AWS"
+                       className="rounded-none border-2 border-[#141414]"
+                     />
+                   </div>
+                   <div className="flex-1">
+                     <label className="text-xs font-bold uppercase tracking-widest mb-2 block">Description (Optional)</label>
+                     <Input 
+                       value={newRuleDesc} 
+                       onChange={e => setNewRuleDesc(e.target.value)} 
+                       placeholder="e.g. Block automated datacenters"
+                       className="rounded-none border-2 border-[#141414]"
+                     />
+                   </div>
+                   <Button onClick={addFraudRule} className="bg-[#141414] hover:bg-black text-white rounded-none uppercase font-bold tracking-widest h-10 px-8">
+                      Add Rule
+                   </Button>
+                </div>
+
+                <div className="overflow-x-auto">
+                   <table className="w-full text-left text-sm font-mono">
+                     <thead className="bg-[#141414] text-white">
+                       <tr>
+                         <th className="p-3 font-bold uppercase tracking-wider">Keyword</th>
+                         <th className="p-3 font-bold uppercase tracking-wider">Description</th>
+                         <th className="p-3 font-bold uppercase tracking-wider">Status</th>
+                         <th className="p-3 font-bold uppercase tracking-wider text-right">Actions</th>
+                       </tr>
+                     </thead>
+                     <tbody className="divide-y divide-[#141414]">
+                        {fraudRules.map(rule => (
+                          <tr key={rule.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="p-3 font-bold text-red-600">{rule.keyword}</td>
+                            <td className="p-3 text-slate-500 text-xs">{rule.description || '-'}</td>
+                            <td className="p-3">
+                               <span className={`px-2 py-1 text-[10px] uppercase font-bold ${rule.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-500'}`}>
+                                 {rule.active ? 'Active (Blocking)' : 'Disabled'}
+                               </span>
+                            </td>
+                            <td className="p-3 flex gap-2 justify-end">
+                               <Button 
+                                 variant="outline" 
+                                 size="sm" 
+                                 className="h-8 rounded-none border-[#141414] text-[10px] uppercase font-bold"
+                                 onClick={() => toggleFraudRule(rule.id, !!rule.active)}
+                               >
+                                 {rule.active ? 'Disable' : 'Enable'}
+                               </Button>
+                               <Button 
+                                 variant="destructive" 
+                                 size="icon" 
+                                 className="h-8 w-8 rounded-none"
+                                 onClick={() => deleteFraudRule(rule.id)}
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                            </td>
+                          </tr>
+                        ))}
+                        {fraudRules.length === 0 && (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center text-slate-500 text-xs uppercase font-bold">
+                              No active fraud rules. The system will fall back to safe defaults (paypal, stripe, aws, etc).
+                            </td>
+                          </tr>
+                        )}
+                     </tbody>
+                   </table>
+                </div>
+             </div>
+          )}
+          {tab === 'settings' && (
              <div className="bg-white border-2 border-[#141414] shadow-[4px_4px_0_0_#141414] p-8 max-w-2xl mx-auto">
                 <div className="flex items-center gap-3 mb-8">
                    <Mail className="w-6 h-6 text-indigo-600" />

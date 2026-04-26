@@ -62,6 +62,15 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS fraud_rules (
+    id TEXT PRIMARY KEY,
+    keyword TEXT UNIQUE,
+    type TEXT,
+    description TEXT,
+    active INTEGER DEFAULT 1,
+    createdAt TEXT
+  );
 `);
 
 const safeAlter = (query: string) => {

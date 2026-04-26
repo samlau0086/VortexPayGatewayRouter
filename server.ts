@@ -431,6 +431,34 @@ async function startServer() {
      res.json({ success: true });
   });
 
+  app.get('/api/admin/fraud-rules', requireAuth, requireAdmin, (req: any, res: any) => {
+     const rules = db.prepare('SELECT * FROM fraud_rules ORDER BY createdAt DESC').all();
+     res.json(rules);
+  });
+
+  app.post('/api/admin/fraud-rules', requireAuth, requireAdmin, (req: any, res: any) => {
+     const { keyword, type, description } = req.body;
+     if (!keyword) return res.status(400).json({ error: 'Keyword is required' });
+     try {
+       const id = 'fr_' + Math.random().toString(36).substring(2, 9);
+       db.prepare('INSERT INTO fraud_rules (id, keyword, type, description, active, createdAt) VALUES (?, ?, ?, ?, 1, ?)').run(id, keyword.toLowerCase(), type || 'keyword', description || '', new Date().toISOString());
+       res.json({ id, keyword, type, description, active: 1 });
+     } catch (err: any) {
+       res.status(500).json({ error: 'Failed to add rule (might be duplicate)' });
+     }
+  });
+
+  app.delete('/api/admin/fraud-rules/:id', requireAuth, requireAdmin, (req: any, res: any) => {
+     db.prepare('DELETE FROM fraud_rules WHERE id = ?').run(req.params.id);
+     res.json({ success: true });
+  });
+
+  app.put('/api/admin/fraud-rules/:id/toggle', requireAuth, requireAdmin, (req: any, res: any) => {
+     const { active } = req.body;
+     db.prepare('UPDATE fraud_rules SET active = ? WHERE id = ?').run(active ? 1 : 0, req.params.id);
+     res.json({ success: true });
+  });
+
   app.get('/api/admin/settings', requireAuth, requireAdmin, async (req: any, res: any) => {
      const settings = db.prepare('SELECT * FROM system_settings').all();
      res.json(settings);
@@ -637,13 +665,16 @@ async function startServer() {
       const data = await res.json() as any;
       if (data.status === 'success') {
         const searchStr = `${data.org || ''} ${data.as || ''} ${data.isp || ''}`.toLowerCase();
-        const blockedKeywords = [
-          'paypal', 'stripe', 'google', 'amazon', 'aws', 
-          'microsoft', 'azure', 'digitalocean', 'ovh', 
-          'fortinet', 'palo alto', 'datacenter', 'hosting', 
-          'alibaba', 'tencent', 'spider', 'bot'
-        ];
         
+        // Fetch active rules from DB
+        const rules = db.prepare('SELECT keyword FROM fraud_rules WHERE active = 1').all() as any[];
+        const blockedKeywords = rules.map(r => r.keyword);
+        
+        // Fallback default rules if none are configured yet, to prevent sudden drop in protection
+        if (blockedKeywords.length === 0) {
+           blockedKeywords.push('paypal', 'stripe', 'google', 'amazon', 'aws', 'microsoft', 'azure', 'digitalocean', 'ovh', 'fortinet', 'palo alto', 'datacenter', 'hosting', 'alibaba', 'tencent', 'spider', 'bot');
+        }
+
         for (const keyword of blockedKeywords) {
           if (searchStr.includes(keyword)) {
             console.log(`[Fraud Block] IP ${ip} matched keyword ${keyword}: ${searchStr}`);
