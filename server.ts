@@ -629,14 +629,73 @@ async function startServer() {
     }
   });
 
+  // Helper to check for blacklisted ASNs/IPs
+  const checkIPBlacklist = async (ip: string) => {
+    if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('10.') || ip.startsWith('192.168.')) return false;
+    try {
+      const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,isp,org,as`);
+      const data = await res.json() as any;
+      if (data.status === 'success') {
+        const searchStr = `${data.org || ''} ${data.as || ''} ${data.isp || ''}`.toLowerCase();
+        const blockedKeywords = [
+          'paypal', 'stripe', 'google', 'amazon', 'aws', 
+          'microsoft', 'azure', 'digitalocean', 'ovh', 
+          'fortinet', 'palo alto', 'datacenter', 'hosting', 
+          'alibaba', 'tencent', 'spider', 'bot'
+        ];
+        
+        for (const keyword of blockedKeywords) {
+          if (searchStr.includes(keyword)) {
+            console.log(`[Fraud Block] IP ${ip} matched keyword ${keyword}: ${searchStr}`);
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('IP Blacklist check failed:', e);
+    }
+    return false;
+  };
+
   // Jump page to strip referer
-  app.get('/api/gateway/jump/:sysOrderId', (req, res) => {
+  app.get('/api/gateway/jump/:sysOrderId', async (req, res) => {
     try {
       const sysOrderId = req.params.sysOrderId;
       const order = db.prepare('SELECT paymentUrl FROM orders WHERE sysOrderId = ?').get(sysOrderId) as any;
       
       if (!order || !order.paymentUrl) {
          return res.status(404).send('Order not found');
+      }
+
+      // IP / ASN Blacklist fraud check
+      const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim();
+      const isFraud = await checkIPBlacklist(clientIp);
+
+      if (isFraud) {
+         return res.status(403).send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Security Alert</title>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                  body { font-family: -apple-system, system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fef2f2; color: #7f1d1d; margin: 0; }
+                  .container { text-align: center; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); max-width: 400px; width: 90%; border: 1px solid #fecaca; }
+                  .icon { color: #ef4444; width: 56px; height: 56px; margin: 0 auto 24px; }
+                  h1 { font-size: 20px; font-weight: 600; margin: 0 0 16px; }
+                  p { font-size: 15px; color: #991b1b; line-height: 1.5; margin: 0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <h1>Suspicious Payment Request Blocked</h1>
+                <p>Your connection has been flagged by our security systems as suspicious. The transaction cannot proceed.</p>
+              </div>
+            </body>
+            </html>
+         `);
       }
 
       // Output an HTML page that strips the referer natively via meta tag, performs fraud checks, then redirects
