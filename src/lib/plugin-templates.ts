@@ -277,22 +277,15 @@ function vortexpay_b_custom_checkout_ui() {
                     max-width: 100% !important;
                 }
                 .woocommerce {
-                    max-width: 450px !important;
+                    max-width: 480px !important;
                     margin: 8vh auto 40px auto !important;
                     background: #ffffff !important;
-                    padding: 40px !important;
-                    border-radius: 16px !important;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.08) !important;
+                    padding: 48px 40px !important;
+                    border-radius: 20px !important;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.05) !important;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
-                }
-                .woocommerce::before {
-                    content: "Secure Checkout";
-                    display: block;
-                    text-align: center;
-                    font-size: 22px;
-                    font-weight: 700;
-                    margin-bottom: 30px;
-                    color: #111;
+                    position: relative;
+                    border: 1px solid #f1f5f9;
                 }
                 .woocommerce-NoticeGroup, .woocommerce-error, .woocommerce-message, .woocommerce-info {
                     margin-bottom: 24px !important;
@@ -328,7 +321,7 @@ function vortexpay_b_custom_checkout_ui() {
                     border: none !important;
                     margin-bottom: 24px !important;
                 }
-                table.shop_table thead, table.shop_table tbody {
+                table.shop_table thead, table.shop_table tbody, table.shop_table tfoot tr.cart-subtotal {
                     display: none !important;
                 }
                 table.shop_table tfoot th, table.shop_table tfoot td {
@@ -413,6 +406,20 @@ function vortexpay_b_custom_checkout_ui() {
             </style>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
+                    // Update generic page title
+                    document.title = "Secure Checkout";
+                    
+                    // Inject custom header
+                    var form = document.querySelector('form#order_review');
+                    if (form) {
+                        var headerHtml = '<div style="text-align: center; margin-bottom: 32px;">' +
+                            '<svg style="width:40px; height:40px; color:#10b981; margin:0 auto 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>' +
+                            '<h1 style="font-size:24px; font-weight:700; color:#0f172a; margin:0 0 8px; font-family:-apple-system, BlinkMacSystemFont, Arial, sans-serif;">Secure Checkout</h1>' +
+                            '<p style="font-size:14px; color:#64748b; margin:0;">Complete your payment securely below.</p>' +
+                            '</div>';
+                        form.insertAdjacentHTML('beforebegin', headerHtml);
+                    }
+
                     var termsCheckbox = document.getElementById('terms');
                     if (termsCheckbox) {
                         termsCheckbox.checked = true;
