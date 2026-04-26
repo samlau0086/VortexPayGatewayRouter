@@ -183,6 +183,14 @@ function add_vortexpay_gateway_class( $gateways ) {
     $gateways[] = 'WC_Gateway_Vortexpay_A'; 
     return $gateways;
 }
+
+add_action('template_redirect', 'vortexpay_a_intercept_cancel');
+function vortexpay_a_intercept_cancel() {
+    if ( isset($_GET['vortex_cancel']) && function_exists('wc_get_cart_url') ) {
+        wp_redirect(wc_get_cart_url());
+        exit;
+    }
+}
 ?>`;
 
 export const pluginB = `<?php
@@ -236,6 +244,9 @@ function vortexpay_b_intercept() {
         $order->update_meta_data('_vortexpay_sys_id', $sys_id);
         if (isset($_GET['return_url'])) {
             $order->update_meta_data('_vortexpay_return_url', esc_url_raw(urldecode($_GET['return_url'])));
+        }
+        if (isset($_GET['cancel_url'])) {
+            $order->update_meta_data('_vortexpay_cancel_url', esc_url_raw(urldecode($_GET['cancel_url'])));
         }
         
         // Mark order as 'pending' so it can be paid
@@ -415,15 +426,21 @@ function vortexpay_b_custom_checkout_ui() {
                     box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
                 }
             </style>
+            <?php
+            $cancel_url = $order->get_meta('_vortexpay_cancel_url');
+            ?>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     // Update generic page title
                     document.title = "Secure Checkout";
                     
+                    var cancelUrl = "<?php echo esc_js($cancel_url); ?>";
+                    var backButtonHtml = cancelUrl ? '<div style="position:absolute; top:24px; left:24px;"><a href="' + cancelUrl + '" style="text-decoration:none; color:#64748b; font-size:14px; display:flex; align-items:center; gap:4px; font-weight:500;"><svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> Back</a></div>' : '';
+
                     // Inject custom header
                     var form = document.querySelector('form#order_review');
                     if (form) {
-                        var headerHtml = '<div style="text-align: center; margin-bottom: 32px;">' +
+                        var headerHtml = backButtonHtml + '<div style="text-align: center; margin-bottom: 32px;">' +
                             '<svg style="width:40px; height:40px; color:#10b981; margin:0 auto 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>' +
                             '<h1 style="font-size:24px; font-weight:700; color:#0f172a; margin:0 0 8px; font-family:-apple-system, BlinkMacSystemFont, Arial, sans-serif;">Secure Checkout</h1>' +
                             '<p style="font-size:14px; color:#64748b; margin:0;">Complete your payment securely below.</p>' +

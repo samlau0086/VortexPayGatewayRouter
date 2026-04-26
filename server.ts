@@ -532,7 +532,8 @@ async function startServer() {
       const host = req.get('host');
       const protocol = req.protocol || 'https';
       const routerReturnUrl = `${protocol}://${host}/api/gateway/return/${sysOrderId}`;
-      const returnUrlParams = `&return_url=${encodeURIComponent(routerReturnUrl)}`;
+      const routerCancelUrl = `${protocol}://${host}/api/gateway/cancel/${sysOrderId}`;
+      const returnUrlParams = `&return_url=${encodeURIComponent(routerReturnUrl)}&cancel_url=${encodeURIComponent(routerCancelUrl)}`;
       const targetBUrl = `https://${bSite.domain}/?vortexpay_sys_id=${sysOrderId}&amount=${amount}${returnUrlParams}`;
       const jumpUrl = `${protocol}://${host}/api/gateway/jump/${sysOrderId}`;
       
@@ -546,6 +547,44 @@ async function startServer() {
     } catch (err: any) {
       console.error('[GATEWAY] Critical Error:', err.message);
       res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  // Cancel handling from B Site
+  app.get('/api/gateway/cancel/:sysOrderId', (req, res) => {
+    try {
+      const sysOrderId = req.params.sysOrderId;
+      const order = db.prepare('SELECT returnUrl FROM orders WHERE sysOrderId = ?').get(sysOrderId) as any;
+      if (order && order.returnUrl) {
+         try {
+           const finalUrl = new URL(order.returnUrl);
+           finalUrl.searchParams.append('vortex_cancel', '1');
+           for (const [key, value] of Object.entries(req.query)) {
+             finalUrl.searchParams.append(key, value as string);
+           }
+           return res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Cancelling order...</title>
+              <meta charset="utf-8">
+              <meta name="referrer" content="no-referrer">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta http-equiv="refresh" content="3;url=${finalUrl.toString()}">
+              <style>
+                  body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f8fafc; color: #334155; margin: 0; }
+              </style>
+            </head>
+            <body>
+              <div style="text-align: center;">Returning to cart...</div>
+            </body>
+            </html>
+           `);
+         } catch(e) {}
+      }
+      res.redirect('/');
+    } catch(err) {
+      res.status(500).send('Error');
     }
   });
 
