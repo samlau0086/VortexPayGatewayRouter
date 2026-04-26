@@ -692,7 +692,7 @@ async function startServer() {
   app.get('/api/gateway/jump/:sysOrderId', async (req, res) => {
     try {
       const sysOrderId = req.params.sysOrderId;
-      const order = db.prepare('SELECT paymentUrl FROM orders WHERE sysOrderId = ?').get(sysOrderId) as any;
+      const order = db.prepare('SELECT paymentUrl, amount, currency FROM orders WHERE sysOrderId = ?').get(sysOrderId) as any;
       
       if (!order || !order.paymentUrl) {
          return res.status(404).send('Order not found');
@@ -701,6 +701,12 @@ async function startServer() {
       // IP / ASN Blacklist fraud check
       const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim();
       const isFraud = await checkIPBlacklist(clientIp);
+
+      const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: order.currency || 'USD'
+      });
+      const formattedTotal = formatter.format(order.amount || 0);
 
       if (isFraud) {
          return res.status(403).send(`
@@ -745,44 +751,73 @@ async function startServer() {
                 justify-content: center; 
                 align-items: center; 
                 height: 100vh; 
-                background: #f8fafc; 
-                color: #141414; 
+                background: #f4f5f7; 
+                color: #111827; 
                 margin: 0;
               }
               .container {
                 background: white;
-                border: 2px solid #141414;
-                box-shadow: 4px 4px 0 0 #141414;
-                max-width: 450px;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+                max-width: 420px;
                 width: 90%;
-                padding: 32px;
-                border-radius: 0;
+                padding: 40px 32px;
+                border-radius: 16px;
+                text-align: center;
+              }
+              .icon-wrapper {
+                color: #10b981;
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: center;
+              }
+              .icon-lock {
+                width: 36px;
+                height: 36px;
               }
               h1 {
                 font-size: 20px;
-                font-weight: 900;
-                text-transform: uppercase;
-                margin: 0 0 8px;
-                letter-spacing: -0.5px;
-                display: flex;
-                align-items: center;
-                gap: 12px;
+                font-weight: 700;
+                margin: 0 0 12px;
+                color: #111827;
               }
               p.subtitle {
                 font-size: 13px;
+                font-weight: 400;
+                color: #6b7280;
+                margin: 0 0 32px;
+              }
+              .divider {
+                height: 1px;
+                background: #f3f4f6;
+                margin: 0 -32px 32px;
+              }
+              .order-total-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 16px;
+                margin-top: -8px;
+                margin-bottom: 24px;
+                color: #111827;
+              }
+              .total-label {
                 font-weight: 500;
-                color: #64748b;
-                margin: 0 0 24px;
+              }
+              .total-value {
+                font-weight: 600;
+                font-size: 18px;
               }
               .terminal-wrapper {
-                background: #f8fafc;
-                border: 2px solid #e2e8f0;
-                color: #475569;
+                background: #f9fafb;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                color: #4b5563;
                 font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
                 padding: 16px;
                 height: 130px;
                 overflow-y: hidden;
                 position: relative;
+                text-align: left;
               }
               .terminal {
                 display: block;
@@ -835,16 +870,23 @@ async function startServer() {
         </head>
         <body>
           <div class="container">
-            <h1>
-               <svg class="icon-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-               </svg>
-               Secure Checkout
-            </h1>
-            <p class="subtitle">Please wait while we securely connect your transaction.</p>
+            <div class="icon-wrapper">
+              <svg class="icon-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <h1>Secure Checkout</h1>
+            <p class="subtitle">Complete your payment securely below.</p>
+            
+            <div class="divider"></div>
+
+            <div class="order-total-row">
+              <span class="total-label">Total:</span>
+              <span class="total-value">${formattedTotal}</span>
+            </div>
             
             <div class="terminal-wrapper">
-              <div class="header">Connection Status</div>
               <div class="terminal" id="output"></div>
               <div class="line" id="cursor"><span class="blink"></span></div>
             </div>
