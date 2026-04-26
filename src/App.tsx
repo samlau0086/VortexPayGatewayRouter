@@ -10,7 +10,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ShieldAlert, ServerCog, Activity, ShieldCheck, CreditCard, ExternalLink, ArrowRightLeft, Radio, Network, Settings, Trash2, Plus,Globe, Code2, LogOut, Copy, Check } from 'lucide-react';
+import { ShieldAlert, ServerCog, Activity, ShieldCheck, CreditCard, ExternalLink, ArrowRightLeft, Radio, Network, Settings, Trash2, Plus,Globe, Code2, LogOut, Copy, Check, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { pluginA, pluginB } from './lib/plugin-templates';
@@ -239,6 +239,7 @@ function VortexPayApp() {
   const [simLoading, setSimLoading] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState('');
   const [sysOrder, setSysOrder] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Forms state
   const [newASite, setNewASite] = useState({ name: '', domain: '', api_key: '' });
@@ -803,9 +804,21 @@ function VortexPayApp() {
 
             {/* ORDER LOG */}
             <div className="mt-8">
-              <h3 className="font-bold uppercase tracking-widest text-sm flex items-center mb-3">
-                {t('tx_feed')}
-              </h3>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-bold uppercase tracking-widest text-sm flex items-center">
+                  {t('tx_feed')}
+                </h3>
+                <div className="relative w-64">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Input 
+                    type="text" 
+                    placeholder="Search Order ID..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 rounded-none border-2 border-[#141414] font-mono text-xs h-9 bg-white"
+                  />
+                </div>
+              </div>
               <div className="border border-[#141414] bg-white overflow-hidden shadow-[4px_4px_0_0_#141414]">
                 <Table>
                   <TableHeader className="bg-[#141414]">
@@ -825,7 +838,12 @@ function VortexPayApp() {
                         <TableCell colSpan={7} className="text-center font-mono py-8 text-slate-400 text-xs">{t('no_tx')}</TableCell>
                       </TableRow>
                     )}
-                    {stats.orders.map((o: any) => (
+                    {stats.orders.filter((o: any) => 
+                      !searchQuery || 
+                      o.sysOrderId.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                      (o.aSiteOrderId && o.aSiteOrderId.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
+                      (o.bSiteOrderId && o.bSiteOrderId.toString().toLowerCase().includes(searchQuery.toLowerCase()))
+                    ).map((o: any) => (
                       <TableRow key={o.sysOrderId} className="border-[#141414] group hover:bg-slate-50 transition-colors">
                         <TableCell className="font-mono text-xs text-slate-600 line-clamp-1">{o.sysOrderId}</TableCell>
                         <TableCell>
