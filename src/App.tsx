@@ -848,11 +848,11 @@ function VortexPayApp() {
                         <TableCell className="font-mono text-xs text-slate-600 line-clamp-1">{o.sysOrderId}</TableCell>
                         <TableCell>
                           <div className="font-mono text-xs">{stats.aSites.find((a:any)=>a.id===o.aSiteId)?.domain || o.aSiteId}</div>
-                          <div className="text-[10px] text-slate-500 font-mono mt-1 uppercase">{t('source_ref')} {o.aSiteOrderId || ('wc_' + o.sysOrderId.substring(5, 11))}</div>
+                          <div className="text-[10px] text-slate-500 font-mono mt-1 uppercase">{t('source_ref')} {o.aSiteOrderId || o.sysOrderId}</div>
                         </TableCell>
                         <TableCell>
                           <div className="font-mono text-xs text-emerald-700">{stats.bSites.find((b:any)=>b.id===o.bSiteId)?.domain || o.bSiteId}</div>
-                          <div className="text-[10px] text-slate-500 font-mono mt-1 uppercase">{t('bgateway_ref')} {o.bSiteOrderId || ('ext_' + o.sysOrderId.substring(4, 12))}</div>
+                          <div className="text-[10px] text-slate-500 font-mono mt-1 uppercase">{t('bgateway_ref')} {o.bSiteOrderId || o.sysOrderId}</div>
                         </TableCell>
                         <TableCell className="font-mono font-bold text-right">${o.amount.toFixed(2)}</TableCell>
                         <TableCell>

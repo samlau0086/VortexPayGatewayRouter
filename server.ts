@@ -527,7 +527,7 @@ async function startServer() {
       }
       
       const sysOrderId = 'sys_' + crypto.randomBytes(6).toString('hex');
-      const bSiteOrderId = 'ext_' + crypto.randomBytes(4).toString('hex');
+      const bSiteOrderId = sysOrderId; // Use sysOrderId as bSiteOrderId to make it searchable in B Site backend
       
       const host = req.get('host');
       const protocol = req.protocol || 'https';
