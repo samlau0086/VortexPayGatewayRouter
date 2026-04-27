@@ -1013,9 +1013,14 @@ function VortexPayApp() {
               
               {/* Site A Config */}
               <div className="border-2 border-[#141414] bg-white p-6 shadow-[6px_6px_0_0_#141414]">
-                <h2 className="text-xl font-black uppercase tracking-tight mb-4 flex items-center border-b-2 border-red-600 pb-2 text-red-600">
-                  <Network className="w-5 h-5 mr-3" /> {t('conf_a')}
-                </h2>
+                <div className="flex justify-between items-center border-b-2 border-red-600 pb-2 mb-4">
+                  <h2 className="text-xl font-black uppercase tracking-tight flex items-center text-red-600">
+                    <Network className="w-5 h-5 mr-3" /> {t('conf_a')}
+                  </h2>
+                  <div className="text-[10px] font-bold tracking-widest uppercase bg-red-100 text-red-800 px-2 py-1 flex items-center">
+                    Quota: {stats.aSites.length} / {stats.quotas?.aSites || 1}
+                  </div>
+                </div>
                 <div className="space-y-4 mb-6">
                   <div>
                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 block">{t('conf_domain_lbl')}</label>
@@ -1029,8 +1034,11 @@ function VortexPayApp() {
                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 block">{t('conf_api_override')}</label>
                      <Input placeholder="Leave blank to auto-generate" className="rounded-none border-[#141414] font-mono text-xs" value={newASite.api_key} onChange={e => setNewASite({...newASite, api_key: e.target.value})} />
                   </div>
-                  <Button onClick={addASite} className="w-full rounded-none bg-red-600 hover:bg-red-700 text-white uppercase font-bold tracking-widest">
-                     <Plus className="w-4 h-4 mr-2" /> {t('add_a')}
+                  <Button 
+                    onClick={addASite} 
+                    disabled={stats.aSites.length >= (stats.quotas?.aSites || 1)}
+                    className="w-full rounded-none bg-red-600 hover:bg-red-700 text-white uppercase font-bold tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
+                     <Plus className="w-4 h-4 mr-2" /> {stats.aSites.length >= (stats.quotas?.aSites || 1) ? 'QUOTA REACHED' : t('add_a')}
                   </Button>
                 </div>
 
@@ -1063,9 +1071,14 @@ function VortexPayApp() {
               <div className="space-y-8">
                 {/* Site B Config */}
                 <div className="border-2 border-[#141414] bg-white p-6 shadow-[6px_6px_0_0_#141414]">
-                  <h2 className="text-xl font-black uppercase tracking-tight mb-4 flex items-center border-b-2 border-emerald-600 pb-2 text-emerald-600">
-                    <ShieldCheck className="w-5 h-5 mr-3" /> {t('conf_b')}
-                  </h2>
+                  <div className="flex justify-between items-center border-b-2 border-emerald-600 pb-2 mb-4">
+                    <h2 className="text-xl font-black uppercase tracking-tight flex items-center text-emerald-600">
+                      <ShieldCheck className="w-5 h-5 mr-3" /> {t('conf_b')}
+                    </h2>
+                    <div className="text-[10px] font-bold tracking-widest uppercase bg-emerald-100 text-emerald-800 px-2 py-1 flex items-center">
+                      Quota: {stats.bSites.length} / {stats.quotas?.bSites || 2}
+                    </div>
+                  </div>
                   <div className="space-y-4 mb-6">
                     <div>
                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 block">{t('safe_domain')}</label>
@@ -1075,8 +1088,11 @@ function VortexPayApp() {
                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1 block">{t('conf_id_lbl')}</label>
                        <Input placeholder="e.g. Stripe Account 1" className="rounded-none border-[#141414]" value={newBSite.name} onChange={e => setNewBSite({...newBSite, name: e.target.value})} />
                     </div>
-                    <Button onClick={addBSite} className="w-full rounded-none bg-emerald-600 hover:bg-emerald-700 text-white uppercase font-bold tracking-widest">
-                       <Plus className="w-4 h-4 mr-2" /> {t('add_b')}
+                    <Button 
+                      onClick={addBSite} 
+                      disabled={stats.bSites.length >= (stats.quotas?.bSites || 2)}
+                      className="w-full rounded-none bg-emerald-600 hover:bg-emerald-700 text-white uppercase font-bold tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
+                       <Plus className="w-4 h-4 mr-2" /> {stats.bSites.length >= (stats.quotas?.bSites || 2) ? 'QUOTA REACHED' : t('add_b')}
                     </Button>
                   </div>
 
