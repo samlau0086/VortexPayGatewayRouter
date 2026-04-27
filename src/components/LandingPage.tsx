@@ -18,7 +18,11 @@ import {
   HelpCircle,
   MessageSquare,
   Activity,
-  History
+  History,
+  ShoppingCart,
+  MonitorPlay,
+  Repeat,
+  PackageOpen
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -85,6 +89,16 @@ const translations = {
     faqA2: '内置的调度器采用滑动窗口算法，能够根据您设置的权重比例（如 30:70）进行精确的心跳分发，误差率控制在 0.1% 以内。',
     faqQ3: '如果 B 站网关响应慢会发生什么？',
     faqA3: '系统会自动检测网关延迟及健康状态。一旦响应时间超过阈值，该节点将被自动降级或移出轮询池，直到恢复正常。',
+    industriesTitle: '无缝接入多种高潜力行业',
+    industriesSub: '从独立站到虚拟物品，我们为您提供最坚实的支付路由保障',
+    indEcom: '跨境独立站 / 特货',
+    indEcomDesc: '支持各类全球化电商、特货及敏感商品站群模式。',
+    indDigital: '数字虚拟产品',
+    indDigitalDesc: '软件授权、游戏充值、加密货币等无物流发货业务。',
+    indSub: '内容订阅服务',
+    indSubDesc: '视频平台、创作者赞助、付费社群会员等高频复购场景。',
+    indDrop: 'Dropshipping',
+    indDropDesc: '灵活应对发货周期长、客诉率波动大的直发货模式。',
     ctaTitle: '准备好升级您的支付基建了吗？',
     ctaSub: '立即加入 VortexPay，体验前所未有的稳定与自由。',
     ctaBtn: '开始免费试用',
@@ -155,6 +169,16 @@ const translations = {
     faqA2: 'Our built-in scheduler uses a sliding window algorithm to ensure precise heartbeat distribution (e.g., 30:70) with an error margin under 0.1%.',
     faqQ3: 'What happens if a gateway responds slowly?',
     faqA3: 'The system automatically monitors latency and health. If response time exceeds a threshold, the node is downgraded or removed from the pool until it recovers.',
+    industriesTitle: 'Seamlessly Integrated with High-Potential Industries',
+    industriesSub: 'From independent stores to virtual goods, we provide the most solid payment routing guarantee.',
+    indEcom: 'Global E-Commerce',
+    indEcomDesc: 'Supports global e-commerce, special categories, and store network models.',
+    indDigital: 'Digital & Virtual Goods',
+    indDigitalDesc: 'Software licenses, game top-ups, API billing without physical shipping.',
+    indSub: 'Content Subscriptions',
+    indSubDesc: 'Video platforms, creator sponsorships, and paid community memberships.',
+    indDrop: 'Dropshipping',
+    indDropDesc: 'Flexibly handle long shipping cycles and fluctuating dispute rates in dropshipping models.',
     ctaTitle: 'Ready to upgrade your payment infrastructure?',
     ctaSub: 'Join VortexPay today for unprecedented stability and freedom.',
     ctaBtn: 'Start Free Trial',
@@ -340,8 +364,49 @@ export const LandingPage = () => {
         </div>
       </section>
 
+      {/* Industries Grid */}
+      <section className="py-24 bg-slate-50 border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">{t('industriesTitle')}</h2>
+            <p className="text-slate-500 font-medium max-w-2xl mx-auto">{t('industriesSub')}</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+               <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                 <ShoppingCart className="w-7 h-7" />
+               </div>
+               <h3 className="text-lg font-bold text-slate-900 mb-3">{t('indEcom')}</h3>
+               <p className="text-slate-500 text-sm leading-relaxed">{t('indEcomDesc')}</p>
+            </div>
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+               <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                 <MonitorPlay className="w-7 h-7" />
+               </div>
+               <h3 className="text-lg font-bold text-slate-900 mb-3">{t('indDigital')}</h3>
+               <p className="text-slate-500 text-sm leading-relaxed">{t('indDigitalDesc')}</p>
+            </div>
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+               <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                 <Repeat className="w-7 h-7" />
+               </div>
+               <h3 className="text-lg font-bold text-slate-900 mb-3">{t('indSub')}</h3>
+               <p className="text-slate-500 text-sm leading-relaxed">{t('indSubDesc')}</p>
+            </div>
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+               <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
+                 <PackageOpen className="w-7 h-7" />
+               </div>
+               <h3 className="text-lg font-bold text-slate-900 mb-3">{t('indDrop')}</h3>
+               <p className="text-slate-500 text-sm leading-relaxed">{t('indDropDesc')}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Solutions / How it works */}
-      <section id="solutions" className="py-24 overflow-hidden">
+      <section id="solutions" className="py-24 overflow-hidden bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center gap-16">
             <div className="lg:w-1/2">
