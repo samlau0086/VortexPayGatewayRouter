@@ -16,9 +16,12 @@ const __dirname = path.dirname(__filename);
 const JWT_SECRET = 'super-secret-jwt-key';
 
 const PLAN_QUOTAS: Record<string, { aSites: number, bSites: number }> = {
-  free: { aSites: 1, bSites: 2 },
-  pro: { aSites: 10, bSites: 20 },
-  enterprise: { aSites: 5000, bSites: 5000 }
+  free: { aSites: 1, bSites: 1 },
+  starter: { aSites: 3, bSites: 6 },
+  professional: { aSites: 30, bSites: 90 },
+  pro: { aSites: 30, bSites: 90 }, // Legacy fallback
+  sourcePack: { aSites: 999999, bSites: 999999 },
+  enterprise: { aSites: 999999, bSites: 999999 } // Legacy fallback
 };
 
 async function startServer() {
@@ -117,7 +120,7 @@ async function startServer() {
     } else {
       // New registration
       const tempUid = 'sys_' + crypto.randomBytes(5).toString('hex');
-      const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(); // 1 day free trial
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 day free trial
       
       try {
         db.prepare(`
@@ -397,7 +400,7 @@ async function startServer() {
     const tenant = db.prepare('SELECT plan FROM tenants WHERE id = ?').get(tenantId) as any;
     const currentCount = db.prepare('SELECT COUNT(*) as count FROM b_sites WHERE tenantId = ?').get(tenantId) as any;
     
-    const quota = PLAN_QUOTAS[tenant.plan || 'free']?.bSites || 2;
+    const quota = PLAN_QUOTAS[tenant.plan || 'free']?.bSites || 1;
     if (currentCount.count >= quota) {
       return res.status(403).json({ error: `Quota exceeded. Your current plan (${tenant.plan}) allows only ${quota} B Site(s).` });
     }

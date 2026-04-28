@@ -64,10 +64,10 @@ const translations = {
     sourcePack: '源码授权 / Source Pack',
     mo: '/ 月',
     once: '/ 一次性',
-    freeFeatures: ['免费试用时长全功能7天', '限制最高 1 个 A 站接入', '基础轮询策略', '标准接入文档支持'],
-    starterFeatures: ['支持最多 5 个 A 站接入', '无限 B 站网关数量', '基础轮询策略', '专属技术支持'],
-    proFeatures: ['支持最多 25 个 A 站接入', '无限 B 站网关数量', '高级 Round-Robin 算法', '7*24 小时专属技术响应'],
-    sourceFeatures: ['100% 完整源代码', '私有化二次开发权', '去中心化无限节点部署', '终身技术指导'],
+    freeFeatures: ['免费试用时长全功能7天', '限制最高 1 个 A 站接入', '限制最高 1 个 B 站网关', '标准接入文档支持'],
+    starterFeatures: ['支持最多 3 个 A 站接入', '支持最多 6 个 B 站网关', '基础轮询策略', '专属技术支持'],
+    proFeatures: ['支持最多 30 个 A 站接入', '支持最多 90 个 B 站网关', '高级 Round-Robin 算法', '7*24 小时专属技术响应'],
+    sourceFeatures: ['无限 A 站和 B 站接入', '100% 完整源代码', '私有化二次开发权', '1年专属技术指导'],
     mostPopular: '最受欢迎 🔥',
     coreRecommend: '核心推荐',
     contactManager: '联系客服经理',
@@ -146,10 +146,10 @@ const translations = {
     sourcePack: 'Source Code License',
     mo: '/ mo',
     once: '/ once',
-    freeFeatures: ['7-Day Full Feature Trial', 'Limited to 1 Business Site', 'Basic Polling Strategy', 'Standard Documentation Support'],
-    starterFeatures: ['Up to 5 Business Sites', 'Unlimited Payment Gateways', 'Basic Polling Strategy', 'Dedicated Support'],
-    proFeatures: ['Up to 25 Business Sites', 'Unlimited Payment Gateways', 'Advanced Round-Robin', '24/7 Priority Support'],
-    sourceFeatures: ['100% Full Source Code', 'Private Customization Rights', 'Unlimited Node Deployment', 'Lifetime Technical Guidance'],
+    freeFeatures: ['7-Day Full Feature Trial', 'Limited to 1 Business Site', 'Limited to 1 Payment Gateway', 'Standard Documentation Support'],
+    starterFeatures: ['Up to 3 Business Sites', 'Up to 6 Payment Gateways', 'Basic Polling Strategy', 'Dedicated Support'],
+    proFeatures: ['Up to 30 Business Sites', 'Up to 90 Payment Gateways', 'Advanced Round-Robin', '24/7 Priority Support'],
+    sourceFeatures: ['Unlimited Sites & Gateways', '100% Full Source Code', 'Private Customization Rights', '1-Year Technical Guidance'],
     mostPopular: 'MOST POPULAR 🔥',
     coreRecommend: 'Recommended',
     contactManager: 'Contact Manager',
@@ -610,7 +610,7 @@ export const LandingPage = () => {
              <Card className="bg-slate-800 border-slate-700 text-white rounded-3xl overflow-hidden hover:scale-105 transition-transform">
                <CardContent className="p-10 text-left">
                   <div className="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-xs">{t('sourcePack')}</div>
-                  <div className="text-4xl font-black mb-6">$499<span className="text-lg font-medium text-slate-500"> {t('once')}</span></div>
+                  <div className="text-4xl font-black mb-6">$899<span className="text-lg font-medium text-slate-500"> {t('once')}</span></div>
                   <ul className="space-y-4 mb-10 text-slate-300 text-sm">
                      {t('sourceFeatures').map((f, i) => (
                       <li key={i} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-400" /> {f}</li>

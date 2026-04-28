@@ -265,9 +265,12 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
                            <SelectValue />
                          </SelectTrigger>
                          <SelectContent className="rounded-none border-2 border-[#141414]">
-                           <SelectItem value="free">Free</SelectItem>
-                           <SelectItem value="pro">Pro</SelectItem>
-                           <SelectItem value="enterprise">Enterprise</SelectItem>
+                           <SelectItem value="free">Free Trial</SelectItem>
+                           <SelectItem value="starter">Starter</SelectItem>
+                           <SelectItem value="professional">Professional</SelectItem>
+                           <SelectItem value="sourcePack">Source Pack</SelectItem>
+                           <SelectItem value="pro">Pro (Legacy)</SelectItem>
+                           <SelectItem value="enterprise">Enterprise (Legacy)</SelectItem>
                          </SelectContent>
                       </Select>
                     </div>
@@ -309,9 +312,12 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
                                        <SelectValue />
                                      </SelectTrigger>
                                      <SelectContent className="rounded-none border-2 border-[#141414]">
-                                       <SelectItem value="free">Free</SelectItem>
-                                       <SelectItem value="pro">Pro</SelectItem>
-                                       <SelectItem value="enterprise">Enterprise</SelectItem>
+                                       <SelectItem value="free">Free Trial</SelectItem>
+                                       <SelectItem value="starter">Starter</SelectItem>
+                                       <SelectItem value="professional">Professional</SelectItem>
+                                       <SelectItem value="sourcePack">Source Pack</SelectItem>
+                                       <SelectItem value="pro">Pro (Legacy)</SelectItem>
+                                       <SelectItem value="enterprise">Enterprise (Legacy)</SelectItem>
                                      </SelectContent>
                                    </Select>
                                 </td>
