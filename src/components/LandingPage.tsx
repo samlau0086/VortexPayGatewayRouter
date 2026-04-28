@@ -58,11 +58,13 @@ const translations = {
     step3Desc: '配置分流权重，系统将根据您的规则自动调配流量，确保持续盈利。',
     pricingTitle: '针对不同规模的定价',
     pricingSub: '支持独立服务器授权及 SaaS 订阅模式',
+    freeTrial: '免费计划 / Free Trial',
     starter: '入门版 / Starter',
     professional: '企业版 / Professional',
     sourcePack: '源码授权 / Source Pack',
     mo: '/ 月',
     once: '/ 一次性',
+    freeFeatures: ['免费试用时长全功能7天', '限制最高 1 个 A 站接入', '基础轮询策略', '标准接入文档支持'],
     starterFeatures: ['支持最多 5 个 A 站接入', '无限 B 站网关数量', '基础轮询策略', '专属技术支持'],
     proFeatures: ['支持最多 25 个 A 站接入', '无限 B 站网关数量', '高级 Round-Robin 算法', '7*24 小时专属技术响应'],
     sourceFeatures: ['100% 完整源代码', '私有化二次开发权', '去中心化无限节点部署', '终身技术指导'],
@@ -138,11 +140,13 @@ const translations = {
     step3Desc: 'Configure weights and rules; the system automatically allocates traffic to ensure continuous profit.',
     pricingTitle: 'Pricing for Every Scale',
     pricingSub: 'Supports standalone server licensing and SaaS subscription models',
+    freeTrial: 'Free Trial',
     starter: 'Starter Plan',
     professional: 'Professional Plan',
     sourcePack: 'Source Code License',
     mo: '/ mo',
     once: '/ once',
+    freeFeatures: ['7-Day Full Feature Trial', 'Limited to 1 Business Site', 'Basic Polling Strategy', 'Standard Documentation Support'],
     starterFeatures: ['Up to 5 Business Sites', 'Unlimited Payment Gateways', 'Basic Polling Strategy', 'Dedicated Support'],
     proFeatures: ['Up to 25 Business Sites', 'Unlimited Payment Gateways', 'Advanced Round-Robin', '24/7 Priority Support'],
     sourceFeatures: ['100% Full Source Code', 'Private Customization Rights', 'Unlimited Node Deployment', 'Lifetime Technical Guidance'],
@@ -562,7 +566,20 @@ export const LandingPage = () => {
           <h2 className="text-3xl md:text-5xl font-black text-white mb-6">{t('pricingTitle')}</h2>
           <p className="text-slate-400 mb-16 max-w-xl mx-auto italic">{t('pricingSub')}</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+             <Card className="bg-slate-800 border-slate-700 text-white rounded-3xl overflow-hidden hover:scale-105 transition-transform">
+               <CardContent className="p-10 text-left">
+                  <div className="text-zinc-400 font-bold mb-4 uppercase tracking-widest text-xs">{t('freeTrial')}</div>
+                  <div className="text-4xl font-black mb-6">$0<span className="text-lg font-medium text-slate-500"> {t('mo')}</span></div>
+                  <ul className="space-y-4 mb-10 text-slate-300 text-sm">
+                    {t('freeFeatures').map((f, i) => (
+                      <li key={i} className={`flex items-center gap-2`}><CheckCircle2 className="w-4 h-4 text-zinc-400" /> {f}</li>
+                    ))}
+                  </ul>
+                  <Button className="w-full bg-slate-700 text-white border-none h-12 font-bold rounded-xl hover:bg-slate-600">{t('getStarted')}</Button>
+               </CardContent>
+             </Card>
+
              <Card className="bg-slate-800 border-slate-700 text-white rounded-3xl overflow-hidden hover:scale-105 transition-transform">
                <CardContent className="p-10 text-left">
                   <div className="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-xs">{t('starter')}</div>
@@ -593,7 +610,7 @@ export const LandingPage = () => {
              <Card className="bg-slate-800 border-slate-700 text-white rounded-3xl overflow-hidden hover:scale-105 transition-transform">
                <CardContent className="p-10 text-left">
                   <div className="text-indigo-400 font-bold mb-4 uppercase tracking-widest text-xs">{t('sourcePack')}</div>
-                  <div className="text-4xl font-black mb-6">$299<span className="text-lg font-medium text-slate-500"> {t('once')}</span></div>
+                  <div className="text-4xl font-black mb-6">$499<span className="text-lg font-medium text-slate-500"> {t('once')}</span></div>
                   <ul className="space-y-4 mb-10 text-slate-300 text-sm">
                      {t('sourceFeatures').map((f, i) => (
                       <li key={i} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-400" /> {f}</li>
