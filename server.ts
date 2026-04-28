@@ -120,7 +120,7 @@ async function startServer() {
     } else {
       // New registration
       const tempUid = 'sys_' + crypto.randomBytes(5).toString('hex');
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 day free trial
+      const expiresAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(); // 2 day free trial
       
       try {
         db.prepare(`
