@@ -278,6 +278,7 @@ export function Docs() {
                   {t('wooSteps')}
                 </pre>
               </div>
+              <p className="mt-6 text-sm text-slate-500 font-bold uppercase tracking-widest flex items-center"><ArrowLeft className="w-4 h-4 mr-2" /> Please log in to your Admin Dashboard to download the plugin package.</p>
             </div>
           )}
 
@@ -290,6 +291,7 @@ export function Docs() {
                   {t('shopifySteps')}
                 </pre>
               </div>
+              <p className="mt-6 text-sm text-slate-500 font-bold uppercase tracking-widest flex items-center"><ArrowLeft className="w-4 h-4 mr-2" /> Please log in to your Admin Dashboard to download the script.</p>
             </div>
           )}
 
@@ -302,6 +304,7 @@ export function Docs() {
                   {t('ocSteps')}
                 </pre>
               </div>
+              <p className="mt-6 text-sm text-slate-500 font-bold uppercase tracking-widest flex items-center"><ArrowLeft className="w-4 h-4 mr-2" /> Please log in to your Admin Dashboard to download the extension.</p>
             </div>
           )}
 

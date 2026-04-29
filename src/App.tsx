@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { ShieldAlert, ServerCog, Activity, ShieldCheck, CreditCard, ExternalLink, ArrowRightLeft, Radio, Network, Settings, Trash2, Plus,Globe, Code2, LogOut, Copy, Check, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { pluginA, pluginB } from './lib/plugin-templates';
+import { pluginA, pluginB, pluginShopify, pluginOpenCart } from './lib/plugin-templates';
 import JSZip from 'jszip';
 import { apiFetch } from './lib/api';
 import { AdminPanel } from './components/AdminPanel';
@@ -1347,9 +1347,22 @@ function VortexPayApp() {
                        <li>Inject our redirect script in Shopify's Checkout process (requires Shopify Plus for Checkout Extensibility) or use as an Alternative Payment Method.</li>
                        <li>If modifying the checkout button is not possible, add VortexPay as a manual Offline Payment Method, and deploy our script in the "Thank You" order confirmation page to automatically redirect the user to the gateway.</li>
                     </ol>
-                    <div className="mt-6">
+                    <div className="mt-6 flex flex-wrap gap-4">
                        <Button onClick={() => window.open('/docs', '_blank')} className="bg-[#141414] hover:bg-black text-white rounded-none h-8 text-[10px] uppercase font-bold tracking-widest">
                           View Shopify Docs
+                       </Button>
+                       <Button onClick={() => {
+                          const blob = new Blob([pluginShopify], { type: 'text/html' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'vortexpay-shopify-inject.html';
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                       }} variant="outline" className="border-[#141414] text-[#141414] hover:bg-slate-100 rounded-none h-8 text-[10px] uppercase font-bold tracking-widest">
+                          Download Inject Script
                        </Button>
                     </div>
                  </div>
@@ -1369,9 +1382,22 @@ function VortexPayApp() {
                        <li>Go to <strong>Extensions &gt; Payments</strong>, locate VortexPay Routing Gateway and click Install.</li>
                        <li>Click Edit, enter your API Key from this dashboard, configure your default Order Status, and save.</li>
                     </ol>
-                    <div className="mt-6">
+                    <div className="mt-6 flex flex-wrap gap-4">
                        <Button onClick={() => window.open('/docs', '_blank')} variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-50 rounded-none h-8 text-[10px] uppercase font-bold tracking-widest">
                           View OpenCart Docs
+                       </Button>
+                       <Button onClick={() => {
+                          const blob = new Blob([pluginOpenCart], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'vortexpay_opencart.php';
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                       }} variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-50 rounded-none h-8 text-[10px] uppercase font-bold tracking-widest">
+                          Download Extension (.php)
                        </Button>
                     </div>
                  </div>
@@ -1400,6 +1426,35 @@ function VortexPayApp() {
 }`}
                       </pre>
                       <p className="text-[10px] text-slate-600 font-sans italic">Your backend should construct this payload and POST it from your server (do not expose your api_key directly in frontend React/Vue scripts if possible).</p>
+                   </div>
+
+                   <div>
+                     <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Code Examples</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div>
+                         <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Node.js (Axios) / Express</p>
+                         <pre className="bg-[#141414] text-emerald-400 p-4 font-mono text-[10px] overflow-x-auto rounded-none">
+{`const payload = {
+  api_key: "sk_...", order_id: "123", amount: 299, currency: "USD",
+  webhook_url: "https://site.com/hook"
+};
+const { data } = await axios.post("https://router/api/gateway/checkout", payload);
+if (data.success) return res.redirect(data.paymentUrl);`}
+                         </pre>
+                       </div>
+                       <div>
+                         <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">PHP (cURL)</p>
+                         <pre className="bg-[#141414] text-sky-400 p-4 font-mono text-[10px] overflow-x-auto rounded-none">
+{`$payload = json_encode(['api_key'=>'sk_...', 'order_id'=>'123', 'amount'=>299, 'currency'=>'USD', 'webhook_url'=>'...']);
+$ch = curl_init('https://router/api/gateway/checkout');
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$res = json_decode(curl_exec($ch), true);
+if ($res['success']) header("Location: " . $res['paymentUrl']);`}
+                         </pre>
+                       </div>
+                     </div>
                    </div>
 
                    <div>

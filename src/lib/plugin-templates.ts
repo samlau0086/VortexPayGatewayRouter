@@ -231,6 +231,115 @@ function vortexpay_a_intercept_cancel() {
 }
 ?>`;
 
+export const pluginShopify = `<!-- 
+  VortexPay Shopify Hosted Payment Page / Script Injection Integration 
+  Place this script in your Shopify Checkout Settings > Additional Scripts 
+  or via a Custom App configuring Checkout Extensibility (for Plus users).
+-->
+<script>
+(function() {
+  // CONFIGURATION
+  const VORTEXPAY_ROUTER_URL = "https://your.vortexpay.server/api/gateway/checkout";
+  const VORTEXPAY_API_KEY = "sk_a_xxxxxx";
+
+  // Check if we are on the final checkout page (Thank You / Order Status)
+  if (window.Shopify && window.Shopify.checkout) {
+    const checkout = window.Shopify.checkout;
+    
+    // Only intercept if the user chose our manual payment method
+    // In Shopify Admin -> Settings -> Payments -> Add Manual Payment Method -> Name it "Credit Card (Secure)"
+    const gateway = checkout.gateway || "";
+    if (gateway.toLowerCase().includes("credit card (secure)")) {
+       
+       const payload = {
+         api_key: VORTEXPAY_API_KEY,
+         order_id: checkout.order_id || checkout.token,
+         amount: checkout.total_price,
+         currency: checkout.currency,
+         return_url: window.location.href, // Redirect back here after payment
+         items: checkout.line_items.map(item => item.title)
+       };
+
+       console.log("Routing via VortexPay...");
+       
+       // Show loading state
+       document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;flex-direction:column;"><h2>Redirecting to Secure Payment...</h2><p>Please do not close this window.</p></div>';
+
+       fetch(VORTEXPAY_ROUTER_URL, {
+         method: "POST",
+         headers: {
+           "Content-Type": "application/json"
+         },
+         body: JSON.stringify(payload)
+       })
+       .then(res => res.json())
+       .then(data => {
+          if (data.success && data.paymentUrl) {
+            window.location.href = data.paymentUrl;
+          } else {
+            alert("Error routing payment: " + (data.error || "Unknown Error"));
+          }
+       })
+       .catch(err => {
+          alert("Network error connecting to payment gateway.");
+          console.error(err);
+       });
+    }
+  }
+})();
+</script>`;
+
+export const pluginOpenCart = `<?php
+/**
+ * Generic VortexPay OpenCart OCMOD extension instructions
+ * Save the code below inside an 'upload/admin/controller/extension/payment/vortexpay.php' etc. 
+ * For demonstration purposes, this is a simplified controller snippet.
+ */
+
+class ControllerExtensionPaymentVortexPay extends Controller {
+    public function index() {
+        $this->load->language('extension/payment/vortexpay');
+        $data['button_confirm'] = $this->language->get('button_confirm');
+        $data['action'] = $this->url->link('extension/payment/vortexpay/send', '', true);
+        return $this->load->view('extension/payment/vortexpay', $data);
+    }
+
+    public function send() {
+        $this->load->model('checkout/order');
+        $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
+
+        $api_key = $this->config->get('payment_vortexpay_api_key');
+        $router_url = $this->config->get('payment_vortexpay_router_url'); // e.g. https://router.com/api/gateway/checkout
+
+        $payload = array(
+            'api_key' => $api_key,
+            'order_id' => $order_info['order_id'],
+            'amount' => $order_info['total'],
+            'currency' => $order_info['currency_code'],
+            'return_url' => $this->url->link('checkout/success')
+        );
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $router_url);
+        curl_setopt($curl, CURLOPT_POST, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $json = json_decode($response, true);
+
+        if (isset($json['success']) && $json['success']) {
+            $this->response->redirect($json['paymentUrl']);
+        } else {
+            $this->session->data['error'] = 'Gateway Error: ' . (isset($json['error']) ? $json['error'] : 'Unknown');
+            $this->response->redirect($this->url->link('checkout/checkout', '', true));
+        }
+    }
+}
+?>`;
 export const pluginB = `<?php
 /**
  * Plugin Name: VortexPay Egress Receiver (Site B)
