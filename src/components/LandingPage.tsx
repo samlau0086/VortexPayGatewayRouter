@@ -293,7 +293,7 @@ export const LandingPage = () => {
             <div className="mt-20 relative">
                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                <div className="relative bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden p-2">
-                  <img src="https://images.unsplash.com/photo-1551288049-bbbda536339a?auto=format&fit=crop&q=80&w=1200&h=600" alt="Dashboard Preview" className="rounded-xl w-full" />
+                  <img src="/dashboard.png" alt="Dashboard Preview" className="rounded-xl w-full" />
                   <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent pointer-events-none"></div>
                </div>
             </div>
