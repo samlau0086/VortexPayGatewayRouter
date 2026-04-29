@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from './components/LandingPage';
+import { Docs } from './components/Docs';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -223,6 +224,7 @@ export default function App() {
       <Routes>
         <Route path="/intro" element={<LandingPage />} />
         <Route path="/admin" element={<VortexPayApp />} />
+        <Route path="/docs" element={<Docs />} />
         {/* Redirect root to intro for sales focus */}
         <Route path="/" element={<Navigate to="/intro" replace />} />
         {/* Fallback */}
@@ -1240,19 +1242,30 @@ function VortexPayApp() {
                
                {/* Site A Integration */}
                <div className="border-2 border-[#141414] bg-white p-6 shadow-[6px_6px_0_0_#141414]">
-                 <div className="flex items-center justify-between mb-2">
+                 <div className="flex items-start justify-between mb-2">
                    <h2 className="text-xl font-black uppercase tracking-tight text-red-600 flex items-center">
                      <Network className="w-5 h-5 mr-3" /> {t('site_a_docs')}
                    </h2>
-                   <Button onClick={() => downloadPlugin('vortexpay-ingress-a.zip', pluginA)} variant="outline" className="border-red-600 text-red-600 hover:bg-red-50 rounded-none h-8 text-[10px] uppercase font-bold tracking-widest px-3">
-                     {t('download_plg')}
-                   </Button>
                  </div>
-                 <p className="text-sm font-serif italic text-slate-500 mb-6 pb-4 border-b border-slate-200">
-                   {t('site_a_desc')}
-                 </p>
+                 
+                 <Tabs defaultValue="woo" className="w-full mt-4">
+                   <TabsList className="bg-slate-100 flex flex-wrap h-auto w-full p-1 rounded-none mb-6">
+                      <TabsTrigger value="woo" className="rounded-none text-[10px] sm:text-xs uppercase font-bold px-2 sm:px-3 py-2 flex-1 text-center">WooCommerce</TabsTrigger>
+                      <TabsTrigger value="shopify" className="rounded-none text-[10px] sm:text-xs uppercase font-bold px-2 sm:px-3 py-2 flex-1 text-center">Shopify (HPP)</TabsTrigger>
+                      <TabsTrigger value="oc" className="rounded-none text-[10px] sm:text-xs uppercase font-bold px-2 sm:px-3 py-2 flex-1 text-center">OpenCart</TabsTrigger>
+                      <TabsTrigger value="sdk" className="rounded-none text-[10px] sm:text-xs uppercase font-bold px-2 sm:px-3 py-2 flex-1 text-center">SaaS API</TabsTrigger>
+                   </TabsList>
 
-                 <div className="space-y-6">
+                   <TabsContent value="woo" className="space-y-6">
+                     <div className="flex justify-between items-start sm:items-center pb-4 border-b border-slate-200 gap-4 flex-col sm:flex-row">
+                       <p className="text-sm font-serif italic text-slate-500">
+                         {t('site_a_desc')}
+                       </p>
+                       <Button onClick={() => downloadPlugin('vortexpay-ingress-woocommerce.zip', pluginA)} variant="outline" className="border-red-600 text-red-600 hover:bg-red-50 rounded-none h-8 text-[10px] uppercase font-bold tracking-widest px-3 flex-shrink-0">
+                         {t('download_plg')} -{'>'} Woo
+                       </Button>
+                     </div>
+                     <div className="space-y-6">
                    <div className="p-4 bg-orange-50 border-l-4 border-orange-600 mb-6">
                       <h4 className="text-xs font-bold uppercase tracking-widest text-[#141414] mb-2 flex items-center">
                          <Activity className="w-4 h-4 mr-2" /> Global API Endpoints
@@ -1304,11 +1317,11 @@ function VortexPayApp() {
                      <p className="text-xs text-slate-500 mt-2 italic font-serif">Plugin should redirect user -&gt; paymentUrl</p>
                    </div>
                    
-                   <div className="pt-4 border-t border-slate-100">
+                   <div className="pt-4 border-t border-slate-100 flex flex-col items-start">
                      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">{t('sync_docs')}</h3>
                      <p className="text-xs text-slate-500 mb-3 italic font-serif">{t('sync_desc')}</p>
                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">{t('webhook_a_format')} (<span className="text-slate-600 bg-slate-100 px-1 py-0.5">POST /wc-api/vortexpay_callback</span>)</h3>
-                     <pre className="bg-slate-50 text-slate-800 border border-slate-200 p-4 font-mono text-[10px] sm:text-xs overflow-x-auto rounded-none">
+                     <pre className="w-full bg-slate-50 text-slate-800 border border-slate-200 p-4 font-mono text-[10px] sm:text-xs overflow-x-auto rounded-none">
 {`{
   "order_id": "wc_1029",
   "sysOrderId": "sys_abc123",
@@ -1319,6 +1332,98 @@ function VortexPayApp() {
                      </pre>
                    </div>
                  </div>
+               </TabsContent>
+
+               <TabsContent value="shopify" className="space-y-6">
+                 <div className="pb-4 border-b border-slate-200">
+                   <h3 className="text-lg font-black uppercase text-slate-800 mb-2">Shopify HPP & Checkout App Integration</h3>
+                   <p className="text-sm font-serif italic text-slate-500">
+                     Since Shopify restricts checkout modifications, we use Hosted Payment Pages (HPP) or custom Shopify Apps to intercept flow.
+                   </p>
+                 </div>
+                 <div className="bg-slate-50 p-6 border-l-4 border-emerald-500">
+                    <ol className="list-decimal pl-4 space-y-4 text-xs font-medium text-slate-700">
+                       <li>Create a Custom App in your Shopify Admin and generate an Offline Access Token.</li>
+                       <li>Inject our redirect script in Shopify's Checkout process (requires Shopify Plus for Checkout Extensibility) or use as an Alternative Payment Method.</li>
+                       <li>If modifying the checkout button is not possible, add VortexPay as a manual Offline Payment Method, and deploy our script in the "Thank You" order confirmation page to automatically redirect the user to the gateway.</li>
+                    </ol>
+                    <div className="mt-6">
+                       <Button onClick={() => window.open('/docs', '_blank')} className="bg-[#141414] hover:bg-black text-white rounded-none h-8 text-[10px] uppercase font-bold tracking-widest">
+                          View Shopify Docs
+                       </Button>
+                    </div>
+                 </div>
+               </TabsContent>
+
+               <TabsContent value="oc" className="space-y-6">
+                 <div className="pb-4 border-b border-slate-200">
+                   <h3 className="text-lg font-black uppercase text-slate-800 mb-2">OpenCart OCMOD Integration</h3>
+                   <p className="text-sm font-serif italic text-slate-500">
+                     Standard OpenCart payment module utilizing the classic MVC architecture.
+                   </p>
+                 </div>
+                 <div className="bg-slate-50 p-6 border-l-4 border-amber-500">
+                    <ol className="list-decimal pl-4 space-y-4 text-xs font-medium text-slate-700">
+                       <li>Download the generic <code className="font-mono bg-white px-1">vortexpay_opencart.ocmod.zip</code> plugin via the docs or extension store.</li>
+                       <li>In your OpenCart Admin, navigate to <strong>Extensions &gt; Installer</strong> and upload the ZIP file.</li>
+                       <li>Go to <strong>Extensions &gt; Payments</strong>, locate VortexPay Routing Gateway and click Install.</li>
+                       <li>Click Edit, enter your API Key from this dashboard, configure your default Order Status, and save.</li>
+                    </ol>
+                    <div className="mt-6">
+                       <Button onClick={() => window.open('/docs', '_blank')} variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-50 rounded-none h-8 text-[10px] uppercase font-bold tracking-widest">
+                          View OpenCart Docs
+                       </Button>
+                    </div>
+                 </div>
+               </TabsContent>
+
+               <TabsContent value="sdk" className="space-y-6">
+                 <div className="pb-4 border-b border-slate-200">
+                   <h3 className="text-lg font-black uppercase text-slate-800 mb-2">REST API & Native SDK Integration</h3>
+                   <p className="text-sm font-serif italic text-slate-500">
+                     For custom-built architectures, Node.js, PHP, Go, Java, or generic SaaS platforms.
+                   </p>
+                 </div>
+                 
+                 <div className="space-y-6">
+                   <div className="p-4 bg-orange-50 border-l-4 border-orange-600">
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-[#141414] mb-2">Endpoint Payload</h4>
+                      <pre className="bg-white border border-orange-200 p-4 font-mono text-[10px] text-slate-800 mb-2 mt-2">
+{`POST /api/gateway/checkout
+
+{
+  "api_key": "YOUR_A_SITE_KEY",
+  "order_id": "ORD_123456",
+  "amount": 299.00,
+  "currency": "USD",
+  "webhook_url": "https://your.site/api/vortexpay_callback"
+}`}
+                      </pre>
+                      <p className="text-[10px] text-slate-600 font-sans italic">Your backend should construct this payload and POST it from your server (do not expose your api_key directly in frontend React/Vue scripts if possible).</p>
+                   </div>
+
+                   <div>
+                     <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Callback Webhook Handling</h4>
+                     <p className="text-xs text-slate-600 mb-2">The system will POST to your <code className="font-mono bg-slate-100 px-1 text-slate-800">webhook_url</code> upon real payment success/failure.</p>
+                     <pre className="bg-[#141414] text-indigo-400 p-4 font-mono text-[10px] overflow-x-auto rounded-none">
+{`// Received Body
+{
+  "order_id": "ORD_123456",
+  "sysOrderId": "sys_abc123",
+  "status": "paid",
+  "currency": "USD",
+  "amount": 299.00
+}`}
+                     </pre>
+                   </div>
+                 </div>
+                 <div className="mt-4 border-t border-slate-200 pt-4">
+                   <Button onClick={() => window.open('/docs', '_blank')} variant="outline" className="border-[#141414] text-[#141414] hover:bg-slate-100 rounded-none h-8 text-[10px] uppercase font-bold tracking-widest">
+                      View Full API Docs
+                   </Button>
+                 </div>
+               </TabsContent>
+                 </Tabs>
                </div>
 
                {/* Site B Integration */}

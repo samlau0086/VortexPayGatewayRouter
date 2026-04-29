@@ -31,6 +31,7 @@ const translations = {
     navFeatures: '功能特性',
     navSolutions: '解决方案',
     navPricing: '价格方案',
+    navDocs: '对接文档',
     login: '登录',
     getStarted: '立即开始',
     heroBadge: '下一代支付分流专家',
@@ -113,6 +114,7 @@ const translations = {
     navFeatures: 'Features',
     navSolutions: 'Solutions',
     navPricing: 'Pricing',
+    navDocs: 'Documentation',
     login: 'Login',
     getStarted: 'Get Started',
     heroBadge: 'Next-Gen Payment Routing Expert',
@@ -229,6 +231,7 @@ export const LandingPage = () => {
             <a href="#features" className="hover:text-indigo-600 transition-colors">{t('navFeatures')}</a>
             <a href="#solutions" className="hover:text-indigo-600 transition-colors">{t('navSolutions')}</a>
             <a href="#pricing" className="hover:text-indigo-600 transition-colors">{t('navPricing')}</a>
+            <a href="/docs" className="hover:text-indigo-600 transition-colors">{t('navDocs')}</a>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200">
